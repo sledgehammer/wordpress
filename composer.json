@@ -1,0 +1,9 @@
+{
+	"name": "sledgehammer/wordpress",
+	"description": "Wordpress database access via the Sledgehammer ORM",
+	"type": "library",
+	"license": "CC-BY-SA-3.0",
+	"require": {
+		"sledgehammer/orm": "*"
+	}
+}
