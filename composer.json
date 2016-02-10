@@ -4,6 +4,7 @@
 	"type": "library",
 	"license": "CC-BY-SA-3.0",
 	"require": {
-		"sledgehammer/orm": "*"
+		"sledgehammer/orm": "*",
+		"sebastian/diff": "*"
 	}
 }

@@ -8,18 +8,31 @@ use const DB_PASSWORD;
 use const DB_USER;
 use function Sledgehammer\getDatabase;
 use function Sledgehammer\getRepository;
+use function Sledgehammer\statusbar;
 use Sledgehammer\Database;
 use Sledgehammer\Logger;
 use Sledgehammer\DatabaseRepositoryBackend;
+use Sledgehammer\Template;
+use Sledgehammer\Url;
 
 /**
  * Inspect the worpress database and
  */
- function init() {
+function init()
+{
     if (defined('DB_USER') === false) {
         notice('No database configured');
         return;
     }
+    if (empty($GLOBALS['table_prefix'])) {
+        notice('No table_prefix configured');
+        return;
+    }
+    static $initialized = false;
+    if ($initialized) {
+        return;
+    }
+    $initialized = true;
     // @todo implement SH lazy database connection
     Database::$instances['default'] = new Database('mysql://' . DB_USER . ':' . DB_PASSWORD . '@' . DB_HOST . '/' . DB_NAME);
     $db = getDatabase('default');
@@ -101,13 +114,13 @@ use Sledgehammer\DatabaseRepositoryBackend;
         'Postmetum' => 'meta_value',
         'Termmetum' => 'meta_value',
     ];
-     /**
-      * Convert php-serialized strings into arrays.
-      *
-      * @param string $value
-      * @return string|array
-      */
-     $arrayReadFilter = function ($value) {
+    /**
+     * Convert php-serialized strings into arrays.
+     *
+     * @param string $value
+     * @return string|array
+     */
+    $arrayReadFilter = function ($value) {
         if (substr($value, 0, 2) === 'a:') {
             $array = @unserialize($value);
             if (is_array($array)) {
@@ -115,22 +128,22 @@ use Sledgehammer\DatabaseRepositoryBackend;
             }
         }
         return $value;
-     };
+    };
 
-     /**
-      * Convert arrays into php-serialized strings.
-      *
-      * @param string|array $value
-      * @return string|array
-      */
-     $arrayWriteFilter = function ($value) {
-         if (is_array($value)) {
-             return serialize($value);
-         }
-         return $value;
-     };
+    /**
+     * Convert arrays into php-serialized strings.
+     *
+     * @param string|array $value
+     * @return string|array
+     */
+    $arrayWriteFilter = function ($value) {
+        if (is_array($value)) {
+            return serialize($value);
+        }
+        return $value;
+    };
 
-     foreach ($mayContainArray as $model => $column) {
+    foreach ($mayContainArray as $model => $column) {
         $backend->configs[$model]->readFilters[$column] = $arrayReadFilter;
         $backend->configs[$model]->writeFilters[$column] = $arrayWriteFilter;
     }
@@ -239,6 +252,36 @@ use Sledgehammer\DatabaseRepositoryBackend;
             'reference' => 'field_id'
         ];
     }
-
     $repo->registerBackend($backend);
+
+    if (defined('Sledgehammer\WEBPATH') === false) {
+        $url = new Url(WP_HOME);
+        $path = $url->path === '/' ? '/' : $url->path.'/';
+        define('Sledgehammer\WEBPATH', $path);
+        define('Sledgehammer\WEBROOT', $path);
+    }
+    define('WEBPATH', \Sledgehammer\WEBPATH);
+
+    if (WP_DEBUG) {
+        $statusbar = function () {
+            if (defined('SAVEQUERIES') && SAVEQUERIES) {
+                $logger = new Logger([
+                    'identifier' => 'WPDB',
+                    'renderer' => [Database::$instances['default'], 'renderLog'],
+                    'plural' => 'queries',
+                    'singular' => 'query',
+                    'columns' => ['SQL', 'Duration'],
+                ]);
+                foreach ($GLOBALS['wpdb']->queries as $item) {
+                    $logger->append($item[0], ['duration' => $item[1]]);
+                }
+            };
+            render(new Template('statusbar.php'));
+        };
+        add_action('admin_enqueue_scripts',function (){
+            wp_enqueue_style('sh-debug', '/../core/css/debug.css');
+        });
+        add_action('admin_footer', $statusbar);
+        add_action('wp_footer', $statusbar);
+    }
 }
