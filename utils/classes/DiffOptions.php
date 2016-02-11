@@ -1,12 +1,8 @@
 <?php
 namespace Sledgehammer\Wordpress;
 
-use Sledgehammer\Alert;
-use Sledgehammer\Button;
 use Sledgehammer\Dialog;
-use Sledgehammer\Dump;
 use Sledgehammer\Form;
-use Sledgehammer\Framework;
 use Sledgehammer\Input;
 use Sledgehammer\Json;
 use Sledgehammer\Template;
@@ -19,20 +15,9 @@ class DiffOptions extends Util
         parent::__construct('Diff wp_options');
     }
 
-    function init()
-    {
-        Framework::$autoloader->importFolder($this->paths['project'] . 'sebastian/diff/src', ['mandatory_superclass' => false]);
-        Framework::$autoloader->importFolder($this->paths['modules'] . 'orm/classes');
-        Framework::initModule($this->paths['modules'] . 'orm');
-        Framework::initModule($this->paths['modules'] . 'wordpress');
-        require_once(dirname($this->paths['project']) . '/web/wp-config.php');
-
-        init();
-    }
-
     function generateContent()
     {
-        $this->init();
+        require(__DIR__.'/../bootstrap.php');
         $form = new Form([
             'legend' => 'Compare snapshot',
             'fields' => [
@@ -78,7 +63,7 @@ class DiffOptions extends Util
             'changes' => [],
             'values' => [],
         ];
-        $format = JSON_PRETTY_PRINT ^ JSON_UNESCAPED_SLASHES;
+        $format = \JSON_PRETTY_PRINT ^ \JSON_UNESCAPED_SLASHES;
         foreach ($old as $key => $oldValue) {
             if (array_key_exists($key, $new) === false) {
                 continue; // skip newly added

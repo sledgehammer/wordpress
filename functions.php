@@ -2,14 +2,7 @@
 
 namespace Sledgehammer\Wordpress;
 
-use const DB_HOST;
-use const DB_NAME;
-use const DB_PASSWORD;
-use const DB_USER;
 use Sledgehammer\DebugR;
-use function Sledgehammer\getDatabase;
-use function Sledgehammer\getRepository;
-use function Sledgehammer\statusbar;
 use Sledgehammer\Database;
 use Sledgehammer\Logger;
 use Sledgehammer\DatabaseRepositoryBackend;
@@ -35,14 +28,14 @@ function init()
     }
     $initialized = true;
     // @todo implement SH lazy database connection
-    Database::$instances['default'] = new Database('mysql://' . DB_USER . ':' . DB_PASSWORD . '@' . DB_HOST . '/' . DB_NAME);
-    $db = getDatabase('default');
+    Database::$instances['default'] = new Database('mysql://' . \DB_USER . ':' . \DB_PASSWORD . '@' . \DB_HOST . '/' . \DB_NAME);
+    $db = \Sledgehammer\getDatabase('default');
     if (current(Logger::$instances) === $db->logger && empty(Logger::$instances['Database'])) {
         unset(Logger::$instances[key(Logger::$instances)]);
         Logger::$instances['Database'] = $db->logger;
     }
     // Sledgehammer ORM configuration
-    $repo = getRepository();
+    $repo = \Sledgehammer\getRepository();
     $backend = new DatabaseRepositoryBackend(["default" => $GLOBALS['table_prefix']]);
     $backend->renameModel('Postmetum', 'PostMeta');
     $backend->renameModel('Termmetum', 'TermMeta');
@@ -287,7 +280,7 @@ function init()
         add_action( 'send_headers', function () {
             if (DebugR::isEnabled()) {
                 ob_start();
-                statusbar();
+                \Sledgehammer\statusbar();
                 DebugR::send('sledgehammer-statusbar', ob_get_clean(), true);
             }
         } );
