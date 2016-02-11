@@ -6,6 +6,7 @@ use const DB_HOST;
 use const DB_NAME;
 use const DB_PASSWORD;
 use const DB_USER;
+use Sledgehammer\DebugR;
 use function Sledgehammer\getDatabase;
 use function Sledgehammer\getRepository;
 use function Sledgehammer\statusbar;
@@ -283,5 +284,18 @@ function init()
         });
         add_action('admin_footer', $statusbar);
         add_action('wp_footer', $statusbar);
+        add_action( 'send_headers', function () {
+            if (DebugR::isEnabled()) {
+                ob_start();
+                statusbar();
+                DebugR::send('sledgehammer-statusbar', ob_get_clean(), true);
+            }
+        } );
+        add_filter('template_include', function ($template) {
+            if (defined('Sledgehammer\GENERATED') === false) {
+                define('Sledgehammer\GENERATED', microtime(true));
+            }
+            return $template;
+        }, PHP_INT_MAX);
     }
 }

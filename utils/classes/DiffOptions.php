@@ -1,7 +1,6 @@
 <?php
 namespace Sledgehammer\Wordpress;
 
-use SebastianBergmann\Diff\Differ;
 use Sledgehammer\Alert;
 use Sledgehammer\Button;
 use Sledgehammer\Dialog;
@@ -10,6 +9,7 @@ use Sledgehammer\Form;
 use Sledgehammer\Framework;
 use Sledgehammer\Input;
 use Sledgehammer\Json;
+use Sledgehammer\Template;
 use Sledgehammer\Util;
 
 class DiffOptions extends Util
@@ -33,32 +33,29 @@ class DiffOptions extends Util
     function generateContent()
     {
         $this->init();
-
-        $step1 = new Dialog('1/3) Diff wp_options ', 'Compare changes in the <b>wp_options</b> table', ['snapshot' => 'Create snapshot']);
-        $step1->initial('snapshot');
-        $answer1 = $step1->import($errors1);
-        $step2 = new Form([
-            'legend' => '1/3) Snapshot created',
+        $form = new Form([
+            'legend' => 'Compare snapshot',
             'fields' => [
-                new Input(['name' => 'snapshot', 'type' => 'hidden']),
+                new Input(['name' => 'snapshot', 'type' => 'textarea', 'cols' => 50, 'rows' => 20]),
+                new Input(['name' => 'compare', 'type' => 'submit', 'class'=>'btn-primary'])
             ],
-            'actions' => ['Compare']
         ]);
-        $answer2 = $step2->import($errors2);
-        if ($answer1 === 'snapshot') {
-            $step2->initial([base64_encode(Json::encode($this->createSnapshot()))]);
-            return $step2;
-        } elseif ($answer2) {
-            $newValues = $this->createSnapshot();
-            $newSnapshot = base64_encode(Json::encode($newValues));
-            if ($answer2['snapshot'] === $newSnapshot) {
-                return new Dialog('3/3) No changes detected', 'No changes detected in the <b>wp_options</b> table.');
-            }
-            $oldValues = Json::decode(base64_decode($answer2['snapshot']), true);
-            $diff = $this->compare($oldValues, $newValues);
-            return new Dump($diff);
+        $form->initial([
+            base64_encode(Json::encode($this->createSnapshot())),
+            'Compare'
+        ]);
+        $data = $form->import($errors2);
+        if ($data === null) {
+            return $form;
         }
-        return $step1;
+        $newValues = $this->createSnapshot();
+        $newSnapshot = base64_encode(Json::encode($newValues));
+        if ($data['snapshot'] === $newSnapshot) {
+            return new Dialog('No changes detected', 'No changes detected in the <b>wp_options</b> table.');
+        }
+        $oldValues = Json::decode(base64_decode($data['snapshot']), true);
+        $diff = $this->compare($oldValues, $newValues);
+        return new Template(__DIR__.'/../templates/diff.php', $diff);
     }
 
     /**
@@ -82,7 +79,6 @@ class DiffOptions extends Util
             'values' => [],
         ];
         $format = JSON_PRETTY_PRINT ^ JSON_UNESCAPED_SLASHES;
-        $differ = new Differ();
         foreach ($old as $key => $oldValue) {
             if (array_key_exists($key, $new) === false) {
                 continue; // skip newly added
@@ -90,7 +86,7 @@ class DiffOptions extends Util
             $oldString = Json::encode($oldValue, $format);
             $newString = Json::encode($new[$key], $format);
             if ($oldString !== $newString) {
-                $diff['changes'][$key] = $differ->diff($oldString, $newString);
+                $diff['changes'][$key] = new ColorDiff($oldString, $newString);
                 $diff['values'][$key] = $newString;
             }
         }
