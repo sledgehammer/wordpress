@@ -5,7 +5,7 @@ use Sledgehammer\Object;
 /**
  * Wordpress "post"
  */
-class Post extends Object
+class Post extends Object implements \ArrayAccess
 {
 
     public $id;
@@ -45,6 +45,5 @@ class Post extends Object
 
     const META_MODEL = 'PostMeta';
     use Meta;
-
 
 }

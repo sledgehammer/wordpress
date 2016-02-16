@@ -22,14 +22,16 @@ class DiffOptions extends Util
             'legend' => 'Compare snapshot',
             'fields' => [
                 new Input(['name' => 'snapshot', 'type' => 'textarea', 'cols' => 50, 'rows' => 20]),
-                new Input(['name' => 'compare', 'type' => 'submit', 'class'=>'btn-primary'])
+                new Input(['name' => 'mode', 'type' => 'select', 'options' => ['as source','as target']]),
+                new Input(['name' => 'compare', 'type' => 'submit', 'class'=>'btn btn-primary']),
             ],
         ]);
         $form->initial([
             base64_encode(Json::encode($this->createSnapshot())),
+            'source',
             'Compare'
         ]);
-        $data = $form->import($errors2);
+        $data = $form->import($errors);
         if ($data === null) {
             return $form;
         }
@@ -39,7 +41,11 @@ class DiffOptions extends Util
             return new Dialog('No changes detected', 'No changes detected in the <b>wp_options</b> table.');
         }
         $oldValues = Json::decode(base64_decode($data['snapshot']), true);
-        $diff = $this->compare($oldValues, $newValues);
+        if ($data['mode'] === 'as target') {
+            $diff = $this->compare($newValues, $oldValues);
+        } else {
+            $diff = $this->compare($oldValues, $newValues);
+        }
         return new Template(__DIR__.'/../templates/diff.php', $diff);
     }
 

@@ -175,8 +175,7 @@ function init()
         'through' => 'TermRelationship',
         'reference' => 'object_id',
         'id' => 'term_taxonomy_id',
-        'fields' => [],
-//            'fields' => ['term_order']
+        'fields' => ['term_order' => 'order']
     ];
 
     $backend->skipProperty('Post', 'post_author');
@@ -204,6 +203,7 @@ function init()
     $backend->skipProperty('Postmetum', 'post_id');
 
     // Term
+    $backend->configs['Term']->class = 'Sledgehammer\Wordpress\Term';
     $backend->configs['Term']->hasMany['taxonomy'] = [
         'model' => 'TermTaxonomy',
         'reference' => 'term_id',

@@ -6,12 +6,11 @@ use Sledgehammer\Json;
 
 
 if ($changes): ?>
-    <div style="overflow-x: scroll">
         <table class="table">
             <thead>
             <tr>
                 <th width="33%">Option changed</th>
-                <th width="33%">New Value</th>
+                <th width="33%" style="min-width: 250px">New Value</th>
                 <th width="34%">Diff</th>
             </tr>
             </thead>
@@ -31,10 +30,9 @@ if ($changes): ?>
             <?php endforeach; ?>
             </tbody>
         </table>
-    </div>
 <?php endif;
 if ($added): ?>
-    <table class="table">
+    <table class="table" style="width: auto;">
         <thead>
         <tr>
             <th width="33%">Option added</th>
@@ -58,7 +56,7 @@ if ($added): ?>
     </table>
 <?php endif;
 if ($removed): ?>
-    <table class="table">
+    <table class="table" style="width: auto;">
         <thead>
         <tr>
             <th>Option removed</th>
