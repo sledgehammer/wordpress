@@ -42,22 +42,48 @@ class ExportPost extends Util {
             $post = $repo->getPost($id);
             $defaults = $repo->createPost();
             $php = "\n\n\$post = \$repo->createPost([\n";
-            foreach (get_object_vars($post) as $property => $value) {
-                if (in_array($property, ['author', 'id', 'meta', 'taxonomies', 'guid', 'parent_id'])) {
-                    continue;
-                }
-                if ($defaults->$property === $value) {
+            $fields = [
+                'type',
+                'title',
+                'slug',
+                'excerpt',
+                'status',
+                'content',
+                'comment_status',
+                'ping_status',
+                'password',
+                'to_ping',
+                'pinged',
+                'content_filtered',
+                'menu_order',
+                'mimetype',
+                'comment_count',
+                'parent_id',
+                'author',
+                'date',
+                'date_gmt',
+                'modified',
+                'modified_gmt',
+            ];
+            foreach ($fields as $property) {
+                if ($defaults->$property === $post->$property) {
                     continue; // skip default values
                 }
-                $php .= "    '" . $property . "' => " . var_export($value, true) . ",\n";
-            }
-            $php .= "    'author' => \$repo->oneUser(['login' => " . var_export($post->author->login, true) . "]),\n";
-            if ($post->parent_id !== '0') {
-                $parent = $repo->getPost($post->parent_id);
-                $php .= "    'parent_id' => \$repo->onePost(['type' => " . var_export($parent->type, true) . ", 'slug' => " . var_export($parent->slug, true) . "])->id,\n";
+                if ($property === 'author') {
+                    $value = "\$repo->oneUser(['login' => " . var_export($post->author->login, true) . "])";
+                } elseif ($property === 'parent_id') {
+                    $parent = $repo->getPost($post->parent_id);
+                    $value  = "\$repo->onePost(['type' => " . var_export($parent->type, true) . ", 'slug' => " . var_export($parent->slug, true) . "])->id";
+                } else {
+                    $value = var_export($post->$property, true);
+                }
+                $php .= "    '" . $property . "' => " . $value . ",\n";
             }
             $php .= "]);\n";
-            $php .= "\$post->setMeta(" . var_export($post->getMeta(), true) . ");\n";
+            $meta = $post->getMeta();
+            unset($meta['_edit_lock']);
+            unset($meta['_edit_last']);
+            $php .= "\$post->setMeta(" . var_export($meta, true) . ");\n";
             foreach ($post->taxonomies as $taxonomy) {
                 if (count($taxonomy->term->getMeta()) !== 0 || $taxonomy->parent_id !== '0' || $taxonomy->description !== '' || $taxonomy->term->group !== '0' || $taxonomy->order !== '0') {
                     throw new \Exception('@todo Implement taxonomy feature');
@@ -75,6 +101,7 @@ class ExportPost extends Util {
                 $php .= "\$post->guid = " . $guid . ";\n";
                 $php .= "\$repo->savePost(\$post, ['ignore_relations' => true]);\n";
             }
+
             $php .= "\n\n";
             return new Dump($php);
         }
