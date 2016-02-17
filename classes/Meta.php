@@ -3,7 +3,7 @@
 namespace Sledgehammer\Wordpress;
 use Sledgehammer\HasManyPlaceholder;
 use Sledgehammer\InfoException;
-use Sledgehammer\RepositoryCollection;
+use Sledgehammer\Collection;
 
 /**
  * Cleaner way of setting the meta data
@@ -24,16 +24,23 @@ trait Meta
         $repo = \Sledgehammer\getRepository();
         if (is_array($keyOrvalues)) {
             foreach($keyOrvalues as $key => $value) {
-                $this->meta[$key] = $repo->create(static::META_MODEL, ['key' => $key, 'value' => $value]);
+                $this->setMeta($key, $value);
             }
         } else {
             $key = $keyOrvalues;
+            foreach ($this->meta as $i => $old) {
+                if ($old->key === $key) {
+                    $old->value = $value; // Update existing value
+                    return;
+                }
+            }
+            // Add new key/value
             $this->meta[$key] = $repo->create(static::META_MODEL, ['key' => $key, 'value' => $value]);
         }
     }
 
     function getMeta($key = null) {
-        if ($this->meta instanceof HasManyPlaceholder || $this->meta instanceof RepositoryCollection) {
+        if ($this->meta instanceof HasManyPlaceholder || $this->meta instanceof Collection) {
             $meta = $this->meta;
         } else {
             throw new \Exception('implement support');
@@ -43,7 +50,9 @@ trait Meta
         }
         $value = $meta->where(['key' => $key]);
         if (count($value) == 1) {
-            return $value[0]->value;
+            foreach ($value as $metaField) {
+                return $metaField->value;
+            }
         } elseif (count($value) == 0) {
             throw new InfoException('Meta field: "'.$key.'" doesn\'t exist in Post('.$this->id.')', 'Existing fields: '.\Sledgehammer\quoted_human_implode(' or ' , array_keys($meta->selectKey('key')->toArray())));
         }
@@ -52,7 +61,7 @@ trait Meta
 
     public function offsetExists($offset)
     {
-        if ($this->meta instanceof HasManyPlaceholder || $this->meta instanceof RepositoryCollection) {
+        if ($this->meta instanceof HasManyPlaceholder || $this->meta instanceof Collection) {
             $meta = $this->meta;
         } else {
             throw new \Exception('implement support');
@@ -72,7 +81,7 @@ trait Meta
 
     public function offsetUnset($offset)
     {
-        if ($this->meta instanceof HasManyPlaceholder || $this->meta instanceof RepositoryCollection) {
+        if ($this->meta instanceof HasManyPlaceholder || $this->meta instanceof Collection) {
             $this->meta->remove(['key' => $offset]);
         } else {
             throw new \Exception('implement support');

@@ -15,7 +15,7 @@ class Migrate extends Object {
      * @param string [$slug]  The slug of the term
      * @return \Generated\TermTaxonomy
      */
-    function importTaxonomy($type, $title, $slug = null) {
+    static function importTaxonomy($type, $title, $slug = null) {
         $slug = $slug ?: sanitize_title($title);
         $repo = \Sledgehammer\getRepository();
         $term = $repo->oneTerm(['slug' => $slug], true);
@@ -42,11 +42,11 @@ class Migrate extends Object {
         return $taxonomy;
     }
 
-    function importCategory($title, $slug = null) {
+    static function importCategory($title, $slug = null) {
         return static::importTaxonomy('category', $title, $slug);
     }
 
-    function importTag($title, $slug = null) {
+    static function importTag($title, $slug = null) {
         return static::importTaxonomy('post_tag', $title, $slug);
     }
 }
