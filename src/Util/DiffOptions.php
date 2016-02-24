@@ -1,5 +1,5 @@
 <?php
-namespace Sledgehammer\Wordpress;
+namespace Sledgehammer\Wordpress\Util;
 
 use Sledgehammer\Dialog;
 use Sledgehammer\Form;

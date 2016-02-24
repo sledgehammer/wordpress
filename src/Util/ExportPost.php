@@ -1,11 +1,13 @@
 <?php
 
-namespace Sledgehammer\Wordpress;
+namespace Sledgehammer\Wordpress\Util;
 
-use Sledgehammer\Dump;
-use Sledgehammer\Form;
-use Sledgehammer\Input;
-use Sledgehammer\Util;
+use Exception;
+use Sledgehammer\Core\Debug\Dump;
+use Sledgehammer\Mvc\Component\Form;
+use Sledgehammer\Mvc\Component\Input;
+use Sledgehammer\Orm\Repository;
+
 
 class ExportPost extends Util {
 
@@ -15,12 +17,12 @@ class ExportPost extends Util {
 
     function generateContent() {
         require(__DIR__ . '/../bootstrap.php');
-        $repo = \Sledgehammer\getRepository();
+        $repo = Repository::instance();
         $lastPosts = $repo->allPosts(['status !=' => 'auto-draft'])->orderByDescending('id')->take(25);
         $options = $lastPosts->select(function ($post) {
                     return $post->id . ') ' . $post->type . ' - ' . $post->slug;
                 }, 'id')->toArray();
-        \Sledgehammer\array_key_unshift($options, 'custom', 'Custom ID');
+       \Sledgehammer\array_key_unshift($options, 'custom', 'Custom ID');
         $form = new Form([
             'method' => 'GET',
             'fields' => [
@@ -86,7 +88,7 @@ class ExportPost extends Util {
             $php .= "\$post->setMeta(" . var_export($meta, true) . ");\n";
             foreach ($post->taxonomies as $taxonomy) {
                 if (count($taxonomy->term->getMeta()) !== 0 || $taxonomy->parent_id !== '0' || $taxonomy->description !== '' || $taxonomy->term->group !== '0' || $taxonomy->order !== '0') {
-                    throw new \Exception('@todo Implement taxonomy feature');
+                    throw new Exception('@todo Implement taxonomy feature');
                 }
                 $php .= "\$post->taxonomies[] = Migrate::importTaxonomy(" . var_export($taxonomy->taxonomy, true) . ", " . var_export($taxonomy->term->name, true) . ", " . var_export($taxonomy->term->slug, true) . ");\n";
             }

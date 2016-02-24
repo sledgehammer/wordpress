@@ -1,9 +1,7 @@
 <?php
 
-use Sledgehammer\Dump;
-use Sledgehammer\Html;
-use Sledgehammer\Json;
-
+use Sledgehammer\Core\Html;
+use Sledgehammer\Core\Json;
 
 if ($changes): ?>
         <table class="table">

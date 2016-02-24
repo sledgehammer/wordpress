@@ -6,5 +6,10 @@
 	"require": {
 		"sledgehammer/orm": "*",
 		"sebastian/diff": "*"
-	}
+	},
+        "autoload": {
+            "psr-4": {
+                "Sledgehammer\\Wordpress\\": "src"
+            }
+        }
 }

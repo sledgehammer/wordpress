@@ -1,9 +1,11 @@
 <?php
 
 namespace Sledgehammer\Wordpress;
-use Sledgehammer\HasManyPlaceholder;
-use Sledgehammer\InfoException;
-use Sledgehammer\Collection;
+
+use Exception;
+use Sledgehammer\Core\Collection;
+use Sledgehammer\Core\InfoException;
+use Sledgehammer\Orm\HasManyPlaceholder;
 
 /**
  * Cleaner way of setting the meta data
@@ -21,7 +23,7 @@ trait Meta
      * @param $value
      */
     function setMeta($keyOrvalues, $value = null) {
-        $repo = \Sledgehammer\getRepository();
+        $repo = getRepository();
         if (is_array($keyOrvalues)) {
             foreach($keyOrvalues as $key => $value) {
                 $this->setMeta($key, $value);
@@ -43,7 +45,7 @@ trait Meta
         if ($this->meta instanceof HasManyPlaceholder || $this->meta instanceof Collection) {
             $meta = $this->meta;
         } else {
-            throw new \Exception('implement support');
+            throw new Exception('implement support');
         }
         if ($key === null) {
             return $meta->select('value', 'key')->toArray();
@@ -56,7 +58,7 @@ trait Meta
         } elseif (count($value) == 0) {
             throw new InfoException('Meta field: "'.$key.'" doesn\'t exist in Post('.$this->id.')', 'Existing fields: '.\Sledgehammer\quoted_human_implode(' or ' , array_keys($meta->selectKey('key')->toArray())));
         }
-        throw new \Exception('Implement support');
+        throw new Exception('Implement support');
     }
 
     public function offsetExists($offset)
@@ -64,7 +66,7 @@ trait Meta
         if ($this->meta instanceof HasManyPlaceholder || $this->meta instanceof Collection) {
             $meta = $this->meta;
         } else {
-            throw new \Exception('implement support');
+            throw new Exception('implement support');
         }
         return $meta->where(['key' => $offset])->count() !== 0;
     }
@@ -84,7 +86,7 @@ trait Meta
         if ($this->meta instanceof HasManyPlaceholder || $this->meta instanceof Collection) {
             $this->meta->remove(['key' => $offset]);
         } else {
-            throw new \Exception('implement support');
+            throw new Exception('implement support');
         }
     }
 }

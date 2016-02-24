@@ -1,13 +1,13 @@
 <?php
 
-namespace Sledgehammer\Wordpress;
-
+namespace Sledgehammer\Wordpress\Util;
 
 use SebastianBergmann\Diff\Differ;
 use Sledgehammer\Html;
+use Sledgehammer\Mvc\View;
 use Sledgehammer\Object;
 
-class ColorDiff extends Object
+class ColorDiff extends Object implements View
 {
     /**
      * @var string Output from the SebastianBergmann\Diff\Differ

@@ -2,7 +2,8 @@
 
 namespace Sledgehammer\Wordpress;
 
-use Sledgehammer\Object;
+use Generated\TermTaxonomy;
+use Sledgehammer\Core\Object;
 
 class Migrate extends Object {
 
@@ -13,11 +14,11 @@ class Migrate extends Object {
      * @param string $type  'category', 'post_tag'
      * @param string $title  The term
      * @param string [$slug]  The slug of the term
-     * @return \Generated\TermTaxonomy
+     * @return TermTaxonomy
      */
     static function importTaxonomy($type, $title, $slug = null) {
         $slug = $slug ?: sanitize_title($title);
-        $repo = \Sledgehammer\getRepository();
+        $repo = Repository::instance();
         $term = $repo->oneTerm(['slug' => $slug], true);
         if ($term) {
             foreach ($term->taxonomy as $taxonomy) {

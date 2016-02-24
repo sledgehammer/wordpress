@@ -1,11 +1,16 @@
 <?php
-namespace Sledgehammer\Wordpress;
-use Sledgehammer\Object;
+namespace Sledgehammer\Wordpress\Model;
+
+use ArrayAccess;
+use Generated\PostMeta;
+use Generated\TermTaxonomy;
+use Generated\User;
+use Sledgehammer\Core\Object;
 
 /**
  * Wordpress "post"
  */
-class Post extends Object implements \ArrayAccess
+class Post extends Object implements ArrayAccess
 {
 
     public $id;
@@ -31,15 +36,15 @@ class Post extends Object implements \ArrayAccess
     public $mimetype;
     public $comment_count;
     /**
-     * @var \Generated\User  The associated User
+     * @var User  The associated User
      */
     public $author;
     /**
-     * @var \Generated\PostMeta|\Sledgehammer\Collection  A collection with the associated PostMetas
+     * @var PostMeta|\Sledgehammer\Collection  A collection with the associated PostMetas
      */
     public $meta;
     /**
-     * @var \Generated\TermTaxonomy|\Sledgehammer\Collection  A collection with the associated TermTaxonomy
+     * @var TermTaxonomy|\Sledgehammer\Collection  A collection with the associated TermTaxonomy
      */
     public $taxonomies;
 
