@@ -4,10 +4,11 @@ namespace Sledgehammer\Wordpress\Util;
 
 use Exception;
 use Sledgehammer\Core\Debug\Dump;
+use Sledgehammer\Devutils\Util;
 use Sledgehammer\Mvc\Component\Form;
 use Sledgehammer\Mvc\Component\Input;
 use Sledgehammer\Orm\Repository;
-
+use Sledgehammer\Wordpress\Bridge;
 
 class ExportPost extends Util {
 
@@ -16,7 +17,7 @@ class ExportPost extends Util {
     }
 
     function generateContent() {
-        require(__DIR__ . '/../bootstrap.php');
+        Bridge::initialize();
         $repo = Repository::instance();
         $lastPosts = $repo->allPosts(['status !=' => 'auto-draft'])->orderByDescending('id')->take(25);
         $options = $lastPosts->select(function ($post) {
@@ -75,7 +76,7 @@ class ExportPost extends Util {
                     $value = "\$repo->oneUser(['login' => " . var_export($post->author->login, true) . "])";
                 } elseif ($property === 'parent_id') {
                     $parent = $repo->getPost($post->parent_id);
-                    $value  = "\$repo->onePost(['type' => " . var_export($parent->type, true) . ", 'slug' => " . var_export($parent->slug, true) . "])->id";
+                    $value  = "\$repo->onePost(['AND', 'type' => " . var_export($parent->type, true) . ", 'slug' => " . var_export($parent->slug, true) . "])->id";
                 } else {
                     $value = var_export($post->$property, true);
                 }
@@ -93,7 +94,7 @@ class ExportPost extends Util {
                 $php .= "\$post->taxonomies[] = Migrate::importTaxonomy(" . var_export($taxonomy->taxonomy, true) . ", " . var_export($taxonomy->term->name, true) . ", " . var_export($taxonomy->term->slug, true) . ");\n";
             }
             if ($post->type == 'attachment') {
-                $php .= "\$post->guid = " . var_export($post - guid, true) . ";\n";
+                $php .= "\$post->guid = " . var_export($post->guid, true) . ";\n";
                 $php .= "\$repo->savePost(\$post);\n";
             } else {
                 $guid = var_export($post->guid, true);

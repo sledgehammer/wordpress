@@ -3,9 +3,9 @@
 namespace Sledgehammer\Wordpress\Util;
 
 use SebastianBergmann\Diff\Differ;
-use Sledgehammer\Html;
+use Sledgehammer\Core\Html;
+use Sledgehammer\Core\Object;
 use Sledgehammer\Mvc\View;
-use Sledgehammer\Object;
 
 class ColorDiff extends Object implements View
 {

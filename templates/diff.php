@@ -8,7 +8,7 @@ if ($changes): ?>
             <thead>
             <tr>
                 <th width="33%">Option changed</th>
-                <th width="33%" style="min-width: 250px">New Value</th>
+                <th width="33%" style="min-width: 250px; max-width: 50vw">New Value</th>
                 <th width="34%">Diff</th>
             </tr>
             </thead>
@@ -30,7 +30,7 @@ if ($changes): ?>
         </table>
 <?php endif;
 if ($added): ?>
-    <table class="table" style="width: auto;">
+    <table class="table">
         <thead>
         <tr>
             <th width="33%">Option added</th>
@@ -42,7 +42,7 @@ if ($added): ?>
         <?php foreach ($added as $key => $value): ?>
             <tr>
                 <td><?= Html::escape($key); ?></td>
-                <td><?php
+                <td style="max-width: 100em"><?php
                     ob_start();
                     dump($value);
                     $html = ob_get_clean();

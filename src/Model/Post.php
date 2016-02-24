@@ -6,6 +6,7 @@ use Generated\PostMeta;
 use Generated\TermTaxonomy;
 use Generated\User;
 use Sledgehammer\Core\Object;
+use Sledgehammer\Wordpress\Meta;
 
 /**
  * Wordpress "post"

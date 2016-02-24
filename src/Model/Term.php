@@ -5,9 +5,11 @@ use ArrayAccess;
 use Generated\TermMeta;
 use Generated\TermTaxonomy;
 use Sledgehammer\Core\Collection;
+use Sledgehammer\Core\Object;
+use Sledgehammer\Wordpress\Meta;
 
 
-class Term extends \Sledgehammer\Object implements ArrayAccess
+class Term extends Object implements ArrayAccess
 {
     public $id;
     public $name;

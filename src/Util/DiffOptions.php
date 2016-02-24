@@ -1,12 +1,14 @@
 <?php
 namespace Sledgehammer\Wordpress\Util;
 
-use Sledgehammer\Dialog;
-use Sledgehammer\Form;
-use Sledgehammer\Input;
-use Sledgehammer\Json;
-use Sledgehammer\Template;
-use Sledgehammer\Util;
+use Sledgehammer\Core\Json;
+use Sledgehammer\Devutils\Util;
+use Sledgehammer\Mvc\Component\Dialog;
+use Sledgehammer\Mvc\Component\Form;
+use Sledgehammer\Mvc\Component\Input;
+use Sledgehammer\Mvc\Template;
+use Sledgehammer\Orm\Repository;
+use Sledgehammer\Wordpress\Bridge;
 
 class DiffOptions extends Util
 {
@@ -17,7 +19,7 @@ class DiffOptions extends Util
 
     function generateContent()
     {
-        require(__DIR__.'/../bootstrap.php');
+        Bridge::initialize();
         $form = new Form([
             'legend' => 'Compare snapshot',
             'fields' => [
@@ -46,7 +48,7 @@ class DiffOptions extends Util
         } else {
             $diff = $this->compare($oldValues, $newValues);
         }
-        return new Template(__DIR__.'/../templates/diff.php', $diff);
+        return new Template('sledgehammer/wordpress/templates/diff.php', $diff);
     }
 
     /**
@@ -54,7 +56,7 @@ class DiffOptions extends Util
      */
     function createSnapshot()
     {
-        $repo = \Sledgehammer\getRepository();
+        $repo = Repository::instance();
         $options = $repo->allOptions()->orderBy('key');
         $sql = $options->getQuery()->andWhere('option_name NOT LIKE "%_transient_%"');
         $options->setQuery($sql);
@@ -69,7 +71,7 @@ class DiffOptions extends Util
             'changes' => [],
             'values' => [],
         ];
-        $format = \JSON_PRETTY_PRINT ^ \JSON_UNESCAPED_SLASHES;
+        $format = JSON_PRETTY_PRINT ^ \JSON_UNESCAPED_SLASHES;
         foreach ($old as $key => $oldValue) {
             if (array_key_exists($key, $new) === false) {
                 continue; // skip newly added

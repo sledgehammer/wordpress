@@ -19,6 +19,14 @@ class Bridge extends Object {
      */
     static function initialize()
     {
+        static $initialized = false;
+        if ($initialized) {
+            return;
+        }
+        $initialized = true;
+        if (function_exists('the_post') === false) {
+            require_once(\Sledgehammer\PATH. 'web/wp-config.php');
+        }
         if (defined('DB_USER') === false) {
             \Sledgehammer\notice('No database configured');
             return;
@@ -27,11 +35,6 @@ class Bridge extends Object {
             \Sledgehammer\notice('No table_prefix configured');
             return;
         }
-        static $initialized = false;
-        if ($initialized) {
-            return;
-        }
-        $initialized = true;
         
         // @todo implement SH lazy database connection
         Connection::$instances['default'] = new Connection('mysql://' . DB_USER . ':' . DB_PASSWORD . '@' . DB_HOST . '/' . DB_NAME);
