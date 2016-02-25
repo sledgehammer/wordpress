@@ -7,16 +7,16 @@ if ($changes): ?>
         <table class="table">
             <thead>
             <tr>
-                <th width="33%">Option changed</th>
-                <th width="33%" style="min-width: 250px; max-width: 50vw">New Value</th>
-                <th width="34%">Diff</th>
+                <th width="12%">Option changed</th>
+                <th width="44%" style="min-width: 250px">New Value</th>
+                <th width="44%">Diff</th>
             </tr>
             </thead>
             <tbody>
             <?php foreach ($changes as $key => $change): ?>
                 <tr>
                     <td style="white-space: nowrap"><?= Html::escape($key) ?></td>
-                    <td><?php
+                    <td style="max-width: 40vw"><?php
                         $value = Json::decode($values[$key], true);
                         ob_start();
                         dump($value);
@@ -30,12 +30,11 @@ if ($changes): ?>
         </table>
 <?php endif;
 if ($added): ?>
-    <table class="table">
+    <table class="table" style="width: auto">
         <thead>
         <tr>
-            <th width="33%">Option added</th>
-            <th width="33%">Value</th>
-            <th width="34%"></th>
+            <th>Option added</th>
+            <th>Value</th>
         </tr>
         </thead>
         <tbody>

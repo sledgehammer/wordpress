@@ -6,6 +6,7 @@ use Exception;
 use Sledgehammer\Core\Collection;
 use Sledgehammer\Core\InfoException;
 use Sledgehammer\Orm\HasManyPlaceholder;
+use Sledgehammer\Orm\Repository;
 
 /**
  * Cleaner way of setting the meta data
@@ -23,7 +24,7 @@ trait Meta
      * @param $value
      */
     function setMeta($keyOrvalues, $value = null) {
-        $repo = getRepository();
+        $repo = Repository::instance();
         if (is_array($keyOrvalues)) {
             foreach($keyOrvalues as $key => $value) {
                 $this->setMeta($key, $value);

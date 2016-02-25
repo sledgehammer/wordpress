@@ -4,6 +4,7 @@ namespace Sledgehammer\Wordpress;
 
 use Generated\TermTaxonomy;
 use Sledgehammer\Core\Object;
+use Sledgehammer\Orm\Repository;
 
 class Migrate extends Object {
 
@@ -30,7 +31,7 @@ class Migrate extends Object {
             // the given slug belongs to another taxonomy type.
             return static::importTaxonomy($type, $title, $slug . '-' . $type);
         }
-        $taxonomy = $repo->createTermTaxonomy([
+        $taxonomy = $repo->createTaxonomy([
             'taxonomy' => $type,
             'count' => '1'
         ]);

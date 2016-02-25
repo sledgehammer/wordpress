@@ -2,6 +2,7 @@
 
 namespace Sledgehammer\Wordpress;
 
+use Sledgehammer\Core\Database\Connection;
 use Sledgehammer\Core\Debug\DebugR;
 use Sledgehammer\Core\Debug\Logger;
 use Sledgehammer\Core\Object;
@@ -9,9 +10,9 @@ use Sledgehammer\Core\Url;
 use Sledgehammer\Mvc\Template;
 use Sledgehammer\Orm\Backend\DatabaseRepositoryBackend;
 use Sledgehammer\Orm\Repository;
-use Sledgehammer\Core\Database\Connection;
-use Sledgehammer\Wordpress\Model\Term;
+use Sledgehammer\Wordpress\Model\Option;
 use Sledgehammer\Wordpress\Model\Post;
+use Sledgehammer\Wordpress\Model\Term;
 
 class Bridge extends Object {
     /**
@@ -50,6 +51,7 @@ class Bridge extends Object {
         $backend->renameModel('Termmetum', 'TermMeta');
         $backend->renameModel('Usermetum', 'UserMeta');
         $backend->renameModel('Commentmetum', 'CommentMeta');
+        $backend->renameModel('TermTaxonomy', 'Taxonomy');
 
         // Column to property mapping
         $map = [
@@ -150,7 +152,7 @@ class Bridge extends Object {
             $backend->configs[$model]->readFilters[$column] = $arrayReadFilter;
             $backend->configs[$model]->writeFilters[$column] = $arrayWriteFilter;
         }
-        $hierachical = ['TermTaxonomy'];
+        $hierachical = ['Taxonomy'];
         foreach ($hierachical as $model) {
     //        function ($id) {
     //            if ($id === '0') {
@@ -180,7 +182,7 @@ class Bridge extends Object {
             'belongsTo' => 'post'
         ];
         $backend->configs['Post']->hasMany['taxonomies'] = [
-            'model' => 'TermTaxonomy',
+            'model' => 'Taxonomy',
             'through' => 'TermRelationship',
             'reference' => 'object_id',
             'id' => 'term_taxonomy_id',
@@ -214,7 +216,7 @@ class Bridge extends Object {
         // Term
         $backend->configs['Term']->class = Term::class;
         $backend->configs['Term']->hasMany['taxonomy'] = [
-            'model' => 'TermTaxonomy',
+            'model' => 'Taxonomy',
             'reference' => 'term_id',
             'id' => 't_id',
             'belongsTo' => 'term'
@@ -234,7 +236,7 @@ class Bridge extends Object {
         ];
         $backend->skipProperty('Termmetum', 'term_id');
 
-        // TermTaxonomy
+        // Taxonomy
         $backend->skipProperty('TermTaxonomy', 'term_id');
         $backend->configs['TermTaxonomy']->belongsTo['term'] = [
             'model' => 'Term',
@@ -255,6 +257,8 @@ class Bridge extends Object {
                 'reference' => 'field_id'
             ];
         }
+        // Option
+        $backend->configs['Option']->class = Option::class;
         $repo->registerBackend($backend);
 
         if (defined('Sledgehammer\WEBPATH') === false) {
