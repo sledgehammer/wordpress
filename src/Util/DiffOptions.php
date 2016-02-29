@@ -23,22 +23,23 @@ class DiffOptions extends Util
         $form = new Form([
             'legend' => 'Compare snapshot',
             'fields' => [
-                new Input(['name' => 'snapshot', 'type' => 'textarea', 'cols' => 50, 'rows' => 20]),
                 new Input(['name' => 'mode', 'type' => 'select', 'options' => ['as source','as target']]),
                 new Input(['name' => 'compare', 'type' => 'submit', 'class'=>'btn btn-primary']),
+                new Input(['name' => 'snapshot', 'type' => 'textarea', 'rows' => 30, 'class' => 'form-control', 'style'=> 'font-family: monospace;']),
+
             ],
         ]);
         $form->initial([
-            base64_encode(Json::encode($this->createSnapshot())),
             'source',
-            'Compare'
+            'Compare',
+            chunk_split(base64_encode(Json::encode($this->createSnapshot()))),
         ]);
         $data = $form->import($errors);
         if ($data === null) {
             return $form;
         }
         $newValues = $this->createSnapshot();
-        $newSnapshot = base64_encode(Json::encode($newValues));
+        $newSnapshot = chunk_split(base64_encode(Json::encode($newValues)));
         if ($data['snapshot'] === $newSnapshot) {
             return new Dialog('No changes detected', 'No changes detected in the <b>wp_options</b> table.');
         }
