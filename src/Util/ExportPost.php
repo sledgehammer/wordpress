@@ -3,10 +3,10 @@
 namespace Sledgehammer\Wordpress\Util;
 
 use Exception;
-use Sledgehammer\Core\Debug\Dump;
 use Sledgehammer\Devutils\Util;
 use Sledgehammer\Mvc\Component\Form;
 use Sledgehammer\Mvc\Component\Input;
+use Sledgehammer\Mvc\Template;
 use Sledgehammer\Orm\Repository;
 use Sledgehammer\Wordpress\Bridge;
 
@@ -32,19 +32,32 @@ class ExportPost extends Util {
                     'class' => 'form-control',
                     'type' => 'select',
                     'options' => $options]),
-                'id' => new Input(['name' => 'custom', 'class' => 'form-control'])
+                'id' => new Input(['name' => 'custom', 'class' => 'form-control']),
+                'varname' => new Input(['name' => 'varname', 'class' => 'form-control']),
             ],
             'actions' => [
                 'Export'
             ]
         ]);
-        $form->initial(['post' => $lastPosts[0]->id]);
+        $form->initial(['post' => $lastPosts[0]->id, 'varname' => '$post']);
         $values = $form->import($errors);
         if ($values) {
-            $id = $values['id'] === 'custom' ? $values['custom'] : $values['id'];
+            if ($values['custom'] !== '') {
+                $form->initial(['post' => $values['custom']]);
+                $id = $values['custom'];
+            } else {
+                $id = $values['id'];
+            }
+            if ($id === 'custom') {
+                return $form;
+            }
             $post = $repo->getPost($id);
+            $var = $values['varname'];
             $defaults = $repo->createPost();
-            $php = "\n\n\$post = \$repo->createPost([\n";
+                
+            $php = $var . " = \$repo->onePost(['AND', 'slug' => " . var_export($post->slug, true) . ", 'type' => " . var_export($post->type, true) . "], true);\n";
+            $php .= "if (".$var." === null) {\n";
+            $php .= "\n\n" . $var . " = \$repo->createPost([\n";
             $fields = [
                 'type',
                 'title',
@@ -86,27 +99,27 @@ class ExportPost extends Util {
             $meta = $post->getMeta();
             unset($meta['_edit_lock']);
             unset($meta['_edit_last']);
-            $php .= "\$post->setMeta(" . var_export($meta, true) . ");\n";
+            $php .= $var."->setMeta(" . var_export($meta, true) . ");\n";
             foreach ($post->taxonomies as $taxonomy) {
                 if (count($taxonomy->term->getMeta()) !== 0 || $taxonomy->parent_id !== '0' || $taxonomy->description !== '' || $taxonomy->term->group !== '0' || $taxonomy->order !== '0') {
                     throw new Exception('@todo Implement taxonomy feature');
                 }
-                $php .= "\$post->taxonomies[] = Migrate::importTaxonomy(" . var_export($taxonomy->taxonomy, true) . ", " . var_export($taxonomy->term->name, true) . ", " . var_export($taxonomy->term->slug, true) . ");\n";
+                $php .= $var."->taxonomies[] = Migrate::importTaxonomy(" . var_export($taxonomy->taxonomy, true) . ", " . var_export($taxonomy->term->name, true) . ", " . var_export($taxonomy->term->slug, true) . ");\n";
             }
             if ($post->type == 'attachment') {
-                $php .= "\$post->guid = " . var_export($post->guid, true) . ";\n";
-                $php .= "\$repo->savePost(\$post);\n";
+                $php .= $var."->guid = " . var_export($post->guid, true) . ";\n";
+                $php .= "\$repo->savePost(".$var.");\n";
             } else {
                 $guid = var_export($post->guid, true);
                 $guid = str_replace("'" . WP_HOME, 'WP_HOME.\'', $guid);
-                $guid = str_replace("=" . $post->id . "'", "='.\$post->id", $guid);
-                $php .= "\$repo->savePost(\$post);\n";
-                $php .= "\$post->guid = " . $guid . ";\n";
-                $php .= "\$repo->savePost(\$post, ['ignore_relations' => true]);\n";
+                $guid = str_replace("=" . $post->id . "'", "='.".$var."->id", $guid);
+                $php .= "\$repo->savePost(".$var.");\n";
+                $php .= $var."->guid = " . $guid . ";\n";
+                $php .= "\$repo->savePost(".$var.", ['ignore_relations' => true]);\n";
             }
 
-            $php .= "\n\n";
-            return new Dump($php);
+            $php .= "\n\n}";
+            return new Template('sledgehammer/wordpress/templates/export_post.php', ['form' => $form, 'php' => $php]);
         }
         return $form;
     }

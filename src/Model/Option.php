@@ -12,6 +12,12 @@ class Option extends Object
     public $value;
     public $autoload;
     
+    /**
+     * Set or create the option.
+     *
+     * @param string $key
+     * @param string|array $value
+     */
     static function overwrite($key, $value) {
         $repo = Repository::instance();
         $option = $repo->oneOption(['key' => $key], true);

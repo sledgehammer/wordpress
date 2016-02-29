@@ -16,14 +16,14 @@ if ($changes): ?>
             <?php foreach ($changes as $key => $change): ?>
                 <tr>
                     <td style="white-space: nowrap"><?= Html::escape($key) ?></td>
-                    <td style="max-width: 40vw"><?php
+                    <td style="max-width: 44vw"><?php
                         $value = Json::decode($values[$key], true);
                         ob_start();
                         dump($value);
                         $html = ob_get_clean();
                         echo substr($html, strpos($html, '</div>') + 6);
                         ?></td>
-                    <td><?php render($change); ?></td>
+                    <td style="max-width: 44vw"><?php render($change); ?></td>
                 </tr>
             <?php endforeach; ?>
             </tbody>
