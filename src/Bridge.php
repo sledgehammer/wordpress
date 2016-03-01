@@ -6,6 +6,7 @@ use Exception;
 use Sledgehammer\Core\Database\Connection;
 use Sledgehammer\Core\Debug\DebugR;
 use Sledgehammer\Core\Debug\Logger;
+use Sledgehammer\Core\Debug\ErrorHandler;
 use Sledgehammer\Core\Object;
 use Sledgehammer\Core\Url;
 use Sledgehammer\Mvc\Template;
@@ -74,6 +75,9 @@ class Bridge extends Object {
                 }
             } );
             add_filter('template_include', function ($template) {
+                if (empty(ErrorHandler::$instances['default'])) {
+                    ErrorHandler::enable();
+                }
                 if (defined('Sledgehammer\GENERATED') === false) {
                     define('Sledgehammer\GENERATED', microtime(true));
                 }
