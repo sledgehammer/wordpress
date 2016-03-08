@@ -3,7 +3,7 @@ namespace Sledgehammer\Wordpress\Model;
 
 use ArrayAccess;
 use Generated\PostMeta;
-use Generated\TermTaxonomy;
+use Generated\Taxonomy;
 use Generated\User;
 use Sledgehammer\Core\Object;
 use Sledgehammer\Wordpress\Meta;
@@ -45,7 +45,7 @@ class Post extends Object implements ArrayAccess
      */
     public $meta;
     /**
-     * @var TermTaxonomy|\Sledgehammer\Collection  A collection with the associated TermTaxonomy
+     * @var Taxonomy[]|\Sledgehammer\Collection  A collection with the associated Taxonomy
      */
     public $taxonomies;
 

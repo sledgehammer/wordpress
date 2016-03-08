@@ -3,7 +3,7 @@ namespace Sledgehammer\Wordpress\Model;
 
 use ArrayAccess;
 use Generated\TermMeta;
-use Generated\TermTaxonomy;
+use Generated\Taxonomy;
 use Sledgehammer\Core\Collection;
 use Sledgehammer\Core\Object;
 use Sledgehammer\Wordpress\Meta;
@@ -16,7 +16,7 @@ class Term extends Object implements ArrayAccess
     public $slug;
     public $group;
     /**
-     * @var TermTaxonomy[]|Collection  A collection with the associated TermTaxonomy
+     * @var Taxonomy[]|Collection  A collection with the associated Taxonomy
      */
     public $taxonomy;
     /**

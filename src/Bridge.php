@@ -45,6 +45,7 @@ class Bridge extends Object {
         if (empty(Repository::$instances['default'])) {
             Repository::$instances['default'] = function () {
                 $repo = new Repository();
+                Repository::$instances['default'] = $repo;
                 $repo->registerBackend(new WordpressRepositoryBackend());
                 return $repo;
             };
