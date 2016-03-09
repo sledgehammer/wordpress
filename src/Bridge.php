@@ -23,8 +23,8 @@ class Bridge extends Object {
             return;
         }
         $initialized = true;
-        if (function_exists('the_post') === false) { // Is wordpress not yet initialized?
-            require_once(\Sledgehammer\PATH. 'web/wp-config.php');
+        if (function_exists('the_post') === false) {
+            throw new Exception('Wordpress is not yet initialized');
         }
         // Lazy database connection
         Connection::$instances['wordpress'] = function () {
