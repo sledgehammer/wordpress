@@ -100,11 +100,17 @@ class ExportPost extends Util {
             unset($meta['_edit_lock']);
             unset($meta['_edit_last']);
             $php .= $var."->setMeta(" . var_export($meta, true) . ");\n";
-            foreach ($post->taxonomies as $taxonomy) {
-                if (count($taxonomy->term->getMeta()) !== 0 || $taxonomy->parent_id !== '0' || $taxonomy->description !== '' || $taxonomy->term->group !== '0' || $taxonomy->order !== '0') {
+            foreach ($post->taxonomies as $i => $taxonomy) {
+                if ($taxonomy->parent_id !== '0' || $taxonomy->description !== '' || $taxonomy->term->group !== '0' || $taxonomy->order !== '0') {
                     throw new Exception('@todo Implement taxonomy feature');
                 }
-                $php .= $var."->taxonomies[] = Migrate::importTaxonomy(" . var_export($taxonomy->taxonomy, true) . ", " . var_export($taxonomy->term->name, true) . ", " . var_export($taxonomy->term->slug, true) . ");\n";
+                if (count($taxonomy->term->getMeta()) === 0) {
+                    $php .= $var."->taxonomies[] = Migrate::importTaxonomy(" . var_export($taxonomy->taxonomy, true) . ", " . var_export($taxonomy->term->name, true) . ", " . var_export($taxonomy->term->slug, true) . ");\n";
+                } else {
+                    $php .= "\$taxonomy".$i." = Migrate::importTaxonomy(" . var_export($taxonomy->taxonomy, true) . ", " . var_export($taxonomy->term->name, true) . ", " . var_export($taxonomy->term->slug, true) . ");\n";
+                    $php .= "\$taxonomy".$i."->setMeta(".var_export($taxonomy->term->getMeta(), true).");\n";
+                    $php .= $var."->taxonomies[] = \$taxonomy".$i.";\n";
+                }
             }
             if ($post->type == 'attachment') {
                 $php .= $var."->guid = " . var_export($post->guid, true) . ";\n";
