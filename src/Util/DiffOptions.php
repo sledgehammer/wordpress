@@ -40,11 +40,11 @@ class DiffOptions extends Util
         }
         $newValues = $this->createSnapshot();
         $newSnapshot = chunk_split(base64_encode(Json::encode($newValues)));
-        if ($data['snapshot'] === $newSnapshot) {
+        if ($data[2] === $newSnapshot) {
             return new Dialog('No changes detected', 'No changes detected in the <b>wp_options</b> table.');
         }
-        $oldValues = Json::decode(base64_decode($data['snapshot']), true);
-        if ($data['mode'] === 'as target') {
+        $oldValues = Json::decode(base64_decode($data[2]), true);
+        if ($data[0] === 'as target') {
             $diff = $this->compare($newValues, $oldValues);
         } else {
             $diff = $this->compare($oldValues, $newValues);

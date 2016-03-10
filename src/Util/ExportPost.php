@@ -42,11 +42,11 @@ class ExportPost extends Util {
         $form->initial(['post' => $lastPosts[0]->id, 'varname' => '$post']);
         $values = $form->import($errors);
         if ($values) {
-            if ($values['custom'] !== '') {
+            if ($values['id'] !== '') {
                 $form->initial(['post' => $values['custom']]);
-                $id = $values['custom'];
-            } else {
                 $id = $values['id'];
+            } else {
+                $id = $values['post'];
             }
             if ($id === 'custom') {
                 return $form;
