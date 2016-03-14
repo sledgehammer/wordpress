@@ -17,7 +17,7 @@ class Migrate extends Object {
      * @param string [$slug]  The slug of the term
      * @return Taxonomy
      */
-    static function importTaxonomy($type, $title, $slug = null) {
+    static function taxonomy($type, $title, $slug = null) {
         $slug = $slug ?: sanitize_title($title);
         $repo = Repository::instance();
         $term = $repo->oneTerm(['slug' => $slug], true);
@@ -29,7 +29,7 @@ class Migrate extends Object {
                 }
             }
             // the given slug belongs to another taxonomy type.
-            return static::importTaxonomy($type, $title, $slug . '-' . $type);
+            return static::taxonomy($type, $title, $slug . '-' . $type);
         }
         $taxonomy = $repo->createTaxonomy([
             'taxonomy' => $type,
@@ -50,8 +50,8 @@ class Migrate extends Object {
      * @param string $slug
      * @return Taxonomy
      */
-    static function importCategory($title, $slug = null) {
-        return static::importTaxonomy('category', $title, $slug);
+    static function category($title, $slug = null) {
+        return static::taxonomy('category', $title, $slug);
     }
 
     /**
@@ -60,7 +60,35 @@ class Migrate extends Object {
      * @param string $slug
      * @return Taxonomy
      */
-    static function importTag($title, $slug = null) {
-        return static::importTaxonomy('post_tag', $title, $slug);
+    static function tag($title, $slug = null) {
+        return static::taxonomy('post_tag', $title, $slug);
     }
+    /**
+     * Open or create the post and patch the properties and meta data.
+     *
+     * @param array $properties
+     * @param array $meta
+     * @param string $guidPrefix Example: WP_HOME.'/?p=' for posts and WP_HOME.'/?page_id=' for pages.
+     */
+    static function post($properties, $meta, $guidPrefix) {
+        $repo = Repository::instance();
+        $conditions = [
+            'AND',
+            'type' => $properties['type'],
+            'slug' => $properties['slug']
+        ];
+        $post = $repo->onePost($conditions, true);
+        if ($post === null) {
+            $post = $repo->createPost($properties);
+            \Sledgehammer\set_object_vars($post, $properties);
+        }
+        $post->setMeta($meta);
+        $repo->savePost($post);
+        if (!$post->guid && $guidPrefix !== false) {
+            $post->guid = $guidPrefix.$post->id;
+            $repo->savePost($post, ['ignore_relations' => true]);
+        }
+        return $post;
+    }
+    
 }

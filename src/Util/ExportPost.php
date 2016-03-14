@@ -10,20 +10,23 @@ use Sledgehammer\Mvc\Template;
 use Sledgehammer\Orm\Repository;
 use Sledgehammer\Wordpress\Bridge;
 
-class ExportPost extends Util {
+class ExportPost extends Util
+{
 
-    function __construct() {
+    function __construct()
+    {
         parent::__construct('Export object (wp_posts & wp_postmeta)');
     }
 
-    function generateContent() {
+    function generateContent()
+    {
         Bridge::initialize();
         $repo = Repository::instance();
-        $lastPosts = $repo->allPosts(['status !=' => 'auto-draft'])->orderByDescending('id')->take(25);
+        $lastPosts = $repo->allPosts(['AND', 'status !=' => 'auto-draft', 'type !=' => 'revision'])->orderByDescending('id')->take(25);
         $options = $lastPosts->select(function ($post) {
-                    return $post->id . ') ' . $post->type . ' - ' . $post->slug;
-                }, 'id')->toArray();
-       \Sledgehammer\array_key_unshift($options, 'custom', 'Custom ID');
+                return $post->id . ') ' . $post->type . ' - ' . $post->slug;
+            }, 'id')->toArray();
+        \Sledgehammer\array_key_unshift($options, 'custom', 'Custom ID');
         $form = new Form([
             'method' => 'GET',
             'fields' => [
@@ -31,9 +34,12 @@ class ExportPost extends Util {
                     'name' => 'id',
                     'class' => 'form-control',
                     'type' => 'select',
-                    'options' => $options]),
-                'id' => new Input(['name' => 'custom', 'class' => 'form-control']),
-                'varname' => new Input(['name' => 'varname', 'class' => 'form-control']),
+                    'options' => $options,
+                    'label' => 'Select post'
+                    ]),
+                'id' => new Input(['name' => 'custom', 'class' => 'form-control', 'label' => 'Custom ID']),
+                'varname' => new Input(['name' => 'varname', 'class' => 'form-control', 'label' => 'Variable name']),
+                'export_defaults' => new Input(['name' => 'export_defaults', 'type' => 'checkbox', 'label' => 'Force defaults (verbose export)']),
             ],
             'actions' => [
                 'Export'
@@ -43,7 +49,7 @@ class ExportPost extends Util {
         $values = $form->import($errors);
         if ($values) {
             if ($values['id'] !== '') {
-                $form->initial(['post' => $values['custom']]);
+                $form->initial(['post' => $values['id']]);
                 $id = $values['id'];
             } else {
                 $id = $values['post'];
@@ -54,10 +60,23 @@ class ExportPost extends Util {
             $post = $repo->getPost($id);
             $var = $values['varname'];
             $defaults = $repo->createPost();
-                
-            $php = $var . " = \$repo->onePost(['AND', 'slug' => " . var_export($post->slug, true) . ", 'type' => " . var_export($post->type, true) . "], true);\n";
-            $php .= "if (".$var." === null) {\n";
-            $php .= "\n\n" . $var . " = \$repo->createPost([\n";
+
+            $taxonomies = [];
+            $php = '';
+            foreach ($post->taxonomies as $i => $taxonomy) {
+                if ($taxonomy->parent_id !== '0' || $taxonomy->description !== '' || $taxonomy->term->group !== '0' || $taxonomy->order !== '0') {
+                    throw new Exception('@todo Implement taxonomy feature');
+                }
+                if (count($taxonomy->term->getMeta()) === 0) {
+                    $taxonomies[] = "Migrate::importTaxonomy(" . var_export($taxonomy->taxonomy, true) . ", " . var_export($taxonomy->term->name, true) . ", " . var_export($taxonomy->term->slug, true) . ")";
+                } else {
+                    $php .= "\$taxonomy" . $i . " = Migrate::importTaxonomy(" . var_export($taxonomy->taxonomy, true) . ", " . var_export($taxonomy->term->name, true) . ", " . var_export($taxonomy->term->slug, true) . ");\n";
+                    $php .= "\$taxonomy" . $i . "->setMeta(" . var_export($taxonomy->term->getMeta(), true) . ");\n";
+                    $taxonomies[] = "\$taxonomy" . $i;
+                }
+            }
+
+            $php .= $var . " = Sledgehammer\Wordpress\Migrate::post([\n";
             $fields = [
                 'type',
                 'title',
@@ -81,50 +100,58 @@ class ExportPost extends Util {
                 'modified',
                 'modified_gmt',
             ];
+            if ($post->type === 'attachment') {
+                $fields[] = 'guid';
+            }
             foreach ($fields as $property) {
-                if ($defaults->$property === $post->$property) {
+                if ($values['export_defaults'] === false && $defaults->$property === $post->$property) {
                     continue; // skip default values
                 }
                 if ($property === 'author') {
                     $value = "\$repo->oneUser(['login' => " . var_export($post->author->login, true) . "])";
+                } elseif ($property === 'guid') {
+                    $guid = var_export($post->guid, true);
+                    $value = str_replace("'" . WP_HOME, 'WP_HOME.\'', $guid);
                 } elseif ($property === 'parent_id') {
-                    $parent = $repo->getPost($post->parent_id);
-                    $value  = "\$repo->onePost(['AND', 'type' => " . var_export($parent->type, true) . ", 'slug' => " . var_export($parent->slug, true) . "])->id";
+                    if ($post->parent_id === '0') {
+                        $value = "'0'";
+                    } else {
+                        $parent = $repo->getPost($post->parent_id);
+                        $value = "\$repo->onePost(['AND', 'type' => " . var_export($parent->type, true) . ", 'slug' => " . var_export($parent->slug, true) . "])->id";
+                    }
                 } else {
                     $value = var_export($post->$property, true);
                 }
                 $php .= "    '" . $property . "' => " . $value . ",\n";
             }
-            $php .= "]);\n";
-            $meta = $post->getMeta();
-            unset($meta['_edit_lock']);
-            unset($meta['_edit_last']);
-            $php .= $var."->setMeta(" . var_export($meta, true) . ");\n";
-            foreach ($post->taxonomies as $i => $taxonomy) {
-                if ($taxonomy->parent_id !== '0' || $taxonomy->description !== '' || $taxonomy->term->group !== '0' || $taxonomy->order !== '0') {
-                    throw new Exception('@todo Implement taxonomy feature');
-                }
-                if (count($taxonomy->term->getMeta()) === 0) {
-                    $php .= $var."->taxonomies[] = Migrate::importTaxonomy(" . var_export($taxonomy->taxonomy, true) . ", " . var_export($taxonomy->term->name, true) . ", " . var_export($taxonomy->term->slug, true) . ");\n";
-                } else {
-                    $php .= "\$taxonomy".$i." = Migrate::importTaxonomy(" . var_export($taxonomy->taxonomy, true) . ", " . var_export($taxonomy->term->name, true) . ", " . var_export($taxonomy->term->slug, true) . ");\n";
-                    $php .= "\$taxonomy".$i."->setMeta(".var_export($taxonomy->term->getMeta(), true).");\n";
-                    $php .= $var."->taxonomies[] = \$taxonomy".$i.";\n";
-                }
+            if ($taxonomies) {
+                $php .= "    'taxonomies' => [\n        " . implode(",\n        ", $taxonomies) . "\n    ],\n";   
             }
-            if ($post->type == 'attachment') {
-                $php .= $var."->guid = " . var_export($post->guid, true) . ";\n";
-                $php .= "\$repo->savePost(".$var.");\n";
+            $php .= "],[\n";
+            $meta = $post->getMeta();
+            foreach ($meta as $key => $value) {
+                if (in_array($key, ['_edit_lock', '_edit_last'])) {
+                    continue;
+                }
+                if ($key === '_thumbnail_id') {
+                    $attachment = $repo->getPost($value);
+                    $guid = var_export($attachment->guid, true);
+                    $value = "\$repo->onePost(['AND','type' => 'attachment', 'guid' => " . str_replace("'" . WP_HOME, 'WP_HOME.\'', $guid) . "])";
+                } else {
+                    $value = var_export($value, true);
+                }
+                $php .= "    '" . $key . "' => " . $value . ",\n";
+            }
+            $php .= "], ";
+            if ($post->type === 'attachment') {
+                $php .= 'false';
             } else {
                 $guid = var_export($post->guid, true);
                 $guid = str_replace("'" . WP_HOME, 'WP_HOME.\'', $guid);
-                $guid = str_replace("=" . $post->id . "'", "='.".$var."->id", $guid);
-                $php .= "\$repo->savePost(".$var.");\n";
-                $php .= $var."->guid = " . $guid . ";\n";
-                $php .= "\$repo->savePost(".$var.", ['ignore_relations' => true]);\n";
+                $php .= str_replace("=" . $post->id . "'", "='", $guid);
             }
+            $php .= ");\n";
 
-            $php .= "\n\n}";
             return new Template('sledgehammer/wordpress/templates/export_post.php', ['form' => $form, 'php' => $php]);
         }
         return $form;
