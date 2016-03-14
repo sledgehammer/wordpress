@@ -80,6 +80,7 @@ class Migrate extends Object {
         $post = $repo->onePost($conditions, true);
         if ($post === null) {
             $post = $repo->createPost($properties);
+        } else {
             \Sledgehammer\set_object_vars($post, $properties);
         }
         $post->setMeta($meta);

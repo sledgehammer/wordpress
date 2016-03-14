@@ -68,9 +68,9 @@ class ExportPost extends Util
                     throw new Exception('@todo Implement taxonomy feature');
                 }
                 if (count($taxonomy->term->getMeta()) === 0) {
-                    $taxonomies[] = "Migrate::importTaxonomy(" . var_export($taxonomy->taxonomy, true) . ", " . var_export($taxonomy->term->name, true) . ", " . var_export($taxonomy->term->slug, true) . ")";
+                    $taxonomies[] = "Migrate::taxonomy(" . var_export($taxonomy->taxonomy, true) . ", " . var_export($taxonomy->term->name, true) . ", " . var_export($taxonomy->term->slug, true) . ")";
                 } else {
-                    $php .= "\$taxonomy" . $i . " = Migrate::importTaxonomy(" . var_export($taxonomy->taxonomy, true) . ", " . var_export($taxonomy->term->name, true) . ", " . var_export($taxonomy->term->slug, true) . ");\n";
+                    $php .= "\$taxonomy" . $i . " = Migrate::taxonomy(" . var_export($taxonomy->taxonomy, true) . ", " . var_export($taxonomy->term->name, true) . ", " . var_export($taxonomy->term->slug, true) . ");\n";
                     $php .= "\$taxonomy" . $i . "->setMeta(" . var_export($taxonomy->term->getMeta(), true) . ");\n";
                     $taxonomies[] = "\$taxonomy" . $i;
                 }
