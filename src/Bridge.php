@@ -32,8 +32,9 @@ class Bridge extends Object {
                 throw new Exception('No database configured');
             }
             $connection = new Connection('mysql://' . DB_USER . ':' . DB_PASSWORD . '@' . DB_HOST . '/' . DB_NAME);
-            if (current(Logger::$instances) === $connection->logger && empty(Logger::$instances['Database'])) {
-                unset(Logger::$instances[key(Logger::$instances)]);
+            if (empty(Logger::$instances['Database[wordpress]'])) {
+                $index = array_search($connection->logger, Logger::$instances);
+                unset(Logger::$instances[$index]);
                 Logger::$instances['Database[wordpress]'] = $connection->logger;
             }
             return $connection;
@@ -71,10 +72,11 @@ class Bridge extends Object {
             add_action( 'send_headers', function () {
                 if (DebugR::isEnabled()) {
                     ob_start();
+                    echo $_SERVER['REQUEST_METHOD'].' '.$_SERVER['REQUEST_URI'];
                     \Sledgehammer\statusbar();
                     DebugR::send('sledgehammer-statusbar', ob_get_clean(), true);
                 }
-            } );
+            }, PHP_INT_MAX );
             add_filter('template_include', function ($template) {
                 if (empty(ErrorHandler::$instances['default'])) {
                     ErrorHandler::enable();
@@ -91,7 +93,7 @@ class Bridge extends Object {
     {
         if (defined('SAVEQUERIES') && SAVEQUERIES) {
             $logger = new Logger([
-                'identifier' => 'WPDB',
+                'identifier' => 'wpdb',
                 'renderer' => [Connection::instance(), 'renderLog'],
                 'plural' => 'queries',
                 'singular' => 'query',
