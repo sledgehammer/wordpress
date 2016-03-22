@@ -31,14 +31,27 @@ trait Meta
             }
         } else {
             $key = $keyOrvalues;
-            foreach ($this->meta as $i => $old) {
-                if ($old->key === $key) {
-                    $old->value = $value; // Update existing value
-                    return;
+            if (array_value($value, 0) === '__MULTIRECORD__') {
+                $this->meta->remove(['key' => $key], true);
+                array_shift($value);
+                foreach ($value as $item) {
+                    $this->meta[] = $repo->create(static::META_MODEL, ['key' => $key, 'value' => $item]);
                 }
+            } else {
+                $first = true;
+                foreach ($this->meta as $i => $old) {
+                    if ($old->key === $key) {
+                        if ($first) {
+                            $old->value = $value; // Update existing value
+                            $first = false;
+                        } else { // was a multirecord
+                            unset($this->meta[$i]); // remove other values
+                        }
+                    }
+                }
+                // Add new key/value
+                $this->meta[$key] = $repo->create(static::META_MODEL, ['key' => $key, 'value' => $value]);
             }
-            // Add new key/value
-            $this->meta[$key] = $repo->create(static::META_MODEL, ['key' => $key, 'value' => $value]);
         }
     }
 
@@ -49,7 +62,19 @@ trait Meta
             throw new Exception('implement support');
         }
         if ($key === null) {
-            return $meta->select('value', 'key')->toArray();
+            $data = [];
+            foreach ($meta as $row) {
+                if (array_key_exists($row->key, $data)) {
+                    if (array_value($data, $row->key, 0) === '__MULTIRECORD__') {
+                        $data[$row->key][] = $row->value;
+                    } else {
+                      $data[$row->key] = ['__MULTIRECORD__', $data[$row->key], $row->value];
+                    }
+                } else {
+                    $data[$row->key] = $row->value;
+                }
+            }
+            return $data;
         }
         $value = $meta->where(['key' => $key]);
         if (count($value) == 1) {
@@ -59,17 +84,25 @@ trait Meta
         } elseif (count($value) == 0) {
             throw new InfoException('Meta field: "'.$key.'" doesn\'t exist in Post('.$this->id.')', 'Existing fields: '.\Sledgehammer\quoted_human_implode(' or ' , array_keys($meta->selectKey('key')->toArray())));
         }
-        throw new Exception('Implement support');
+        $data = ['__MULTIRECORD__'];
+        foreach ($value as $row) {
+            $data[] = $row->value;
+        }
+        return $data;
     }
-
-    public function offsetExists($offset)
-    {
+    
+    function hasMeta($key) {
         if ($this->meta instanceof HasManyPlaceholder || $this->meta instanceof Collection) {
             $meta = $this->meta;
         } else {
             throw new Exception('implement support');
         }
         return $meta->where(['key' => $offset])->count() !== 0;
+    }
+
+    public function offsetExists($offset)
+    {
+        return $this->hasMeta($offset);
     }
 
     public function offsetGet($offset)
@@ -85,7 +118,7 @@ trait Meta
     public function offsetUnset($offset)
     {
         if ($this->meta instanceof HasManyPlaceholder || $this->meta instanceof Collection) {
-            $this->meta->remove(['key' => $offset]);
+            $this->meta->remove(['key' => $offset], true);
         } else {
             throw new Exception('implement support');
         }
