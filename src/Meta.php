@@ -38,19 +38,20 @@ trait Meta
                     $this->meta[] = $repo->create(static::META_MODEL, ['key' => $key, 'value' => $item]);
                 }
             } else {
-                $first = true;
+                $found = false;
                 foreach ($this->meta as $i => $old) {
                     if ($old->key === $key) {
-                        if ($first) {
-                            $old->value = $value; // Update existing value
-                            $first = false;
-                        } else { // was a multirecord
+                        if ($found) {  // was a multirecord
                             unset($this->meta[$i]); // remove other values
+                        } else {
+                            $old->value = $value; // Update existing value
+                            $found = true;
                         }
                     }
                 }
-                // Add new key/value
-                $this->meta[$key] = $repo->create(static::META_MODEL, ['key' => $key, 'value' => $value]);
+                if ($found === false) { // Not found? add new key/value
+                    $this->meta[] = $repo->create(static::META_MODEL, ['key' => $key, 'value' => $value]);
+                }
             }
         }
     }
