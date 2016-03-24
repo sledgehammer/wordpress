@@ -12,11 +12,12 @@ use Sledgehammer\Core\Url;
 use Sledgehammer\Mvc\Template;
 use Sledgehammer\Orm\Repository;
 
-class Bridge extends Object {
+class Bridge extends Object
+{
     /**
-     * Inspect the worpress database and
+     * Inspect the worpress database and.
      */
-    static function initialize()
+    public static function initialize()
     {
         static $initialized = false;
         if ($initialized) {
@@ -31,23 +32,25 @@ class Bridge extends Object {
             if (defined('DB_USER') === false) {
                 throw new Exception('No database configured');
             }
-            $connection = new Connection('mysql://' . DB_USER . ':' . DB_PASSWORD . '@' . DB_HOST . '/' . DB_NAME);
+            $connection = new Connection('mysql://'.DB_USER.':'.DB_PASSWORD.'@'.DB_HOST.'/'.DB_NAME);
             if (empty(Logger::$instances['Database[wordpress]'])) {
                 $index = array_search($connection->logger, Logger::$instances);
                 unset(Logger::$instances[$index]);
                 Logger::$instances['Database[wordpress]'] = $connection->logger;
             }
+
             return $connection;
         };
         if (empty(Connection::$instances['default'])) {
             Connection::$instances['default'] = 'wordpress';
-        } 
+        }
         // Sledgehammer ORM configuration
         if (empty(Repository::$instances['default'])) {
             Repository::$instances['default'] = function () {
                 $repo = new Repository();
                 Repository::$instances['default'] = $repo;
                 $repo->registerBackend(new WordpressRepositoryBackend());
+
                 return $repo;
             };
         } else {
@@ -64,19 +67,19 @@ class Bridge extends Object {
         define('WEBPATH', \Sledgehammer\WEBPATH);
 
         if (WP_DEBUG) {
-            add_action('admin_enqueue_scripts',function (){
+            add_action('admin_enqueue_scripts', function () {
                 wp_enqueue_style('sh-debug', '/../core/css/debug.css');
             });
             add_action('admin_footer', [self::class, 'statusbar']);
             add_action('wp_footer', [self::class, 'statusbar']);
-            add_action( 'send_headers', function () {
+            add_action('send_headers', function () {
                 if (DebugR::isEnabled()) {
                     ob_start();
                     echo $_SERVER['REQUEST_METHOD'].' '.$_SERVER['REQUEST_URI'];
                     \Sledgehammer\statusbar();
                     DebugR::send('sledgehammer-statusbar', ob_get_clean(), true);
                 }
-            }, PHP_INT_MAX );
+            }, PHP_INT_MAX);
             add_filter('template_include', function ($template) {
                 if (empty(ErrorHandler::$instances['default'])) {
                     ErrorHandler::enable();
@@ -84,11 +87,12 @@ class Bridge extends Object {
                 if (defined('Sledgehammer\GENERATED') === false) {
                     define('Sledgehammer\GENERATED', microtime(true));
                 }
+
                 return $template;
             }, PHP_INT_MAX);
         }
     }
-    
+
     public static function statusbar()
     {
         if (defined('SAVEQUERIES') && SAVEQUERIES) {

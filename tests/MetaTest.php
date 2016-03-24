@@ -10,10 +10,10 @@ use SledgehammerTests\Core\TestCase;
  */
 class MetaTest extends TestCase
 {
-
     protected $backupGlobals = false;
-    
-    function testRead() {
+
+    public function testRead()
+    {
         $repo = Repository::instance();
         $post = $repo->createPost();
         $post->meta = new Collection([
@@ -23,7 +23,7 @@ class MetaTest extends TestCase
         $this->assertEquals('1', $post->getMeta('one'));
         $this->assertEquals('2', $post->getMeta('two'));
         $this->assertEquals(['one' => '1', 'two' => '2'], $post->getMeta());
-        
+
         try {
             $post->getMeta('doesntexist');
             $this->fail('Reading a non-existing field without providing a default should throw an exception');
@@ -31,10 +31,11 @@ class MetaTest extends TestCase
             $this->assertEquals('Meta field: "doesntexist" doesn\'t exist in Post ', $e->getMessage());
             $this->assertEquals('Existing fields: "one" or "two"', $e->getInformation());
         }
-        $this->assertEquals('defaultValue', $post->getMeta('doesntexist','defaultValue'), 'Should return the default value if one is provided');
+        $this->assertEquals('defaultValue', $post->getMeta('doesntexist', 'defaultValue'), 'Should return the default value if one is provided');
     }
-    
-    function testWrite() {
+
+    public function testWrite()
+    {
         $repo = Repository::instance();
         $post = $repo->createPost();
         $post->setMeta('one', 1);
@@ -50,7 +51,7 @@ class MetaTest extends TestCase
         $this->assertEquals(['one' => 'een', 'two' => 2, 'three' => 3, 'four' => 'vier'], $post->getMeta());
     }
 
-    function testMultiRecordRead()
+    public function testMultiRecordRead()
     {
         $repo = Repository::instance();
         $post = $repo->createPost();
@@ -62,7 +63,7 @@ class MetaTest extends TestCase
         $this->assertEquals(['__MULTIRECORD__', 'first', 'second'], $post->getMeta('gallery'));
     }
 
-    function testMultiRecordWrite()
+    public function testMultiRecordWrite()
     {
         $repo = Repository::instance();
         $post = $repo->createPost();
@@ -70,5 +71,4 @@ class MetaTest extends TestCase
         $this->assertCount(2, $post->meta);
         $this->assertEquals(['__MULTIRECORD__', 'first', 'second'], $post->getMeta('gallery'));
     }
-
 }

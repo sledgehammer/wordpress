@@ -1,4 +1,5 @@
 <?php
+
 namespace Sledgehammer\Wordpress\Model;
 
 use ArrayAccess;
@@ -9,11 +10,10 @@ use Sledgehammer\Core\Object;
 use Sledgehammer\Wordpress\Meta;
 
 /**
- * Wordpress "post"
+ * Wordpress "post".
  */
 class Post extends Object implements ArrayAccess
 {
-
     public $id;
     public $date;
     public $date_gmt;
@@ -36,20 +36,28 @@ class Post extends Object implements ArrayAccess
     public $type;
     public $mimetype;
     public $comment_count;
+
     /**
-     * @var User  The associated User
+     * @var User The associated User
      */
     public $author;
+
     /**
-     * @var PostMeta|\Sledgehammer\Collection  A collection with the associated PostMetas
+     * @var Collection|PostMeta[] The meta fields
      */
     public $meta;
+
     /**
-     * @var Taxonomy[]|\Sledgehammer\Collection  A collection with the associated Taxonomy
+     * @var Collection|Taxonomy[] The taxonomies (tags, categories, etc)
      */
     public $taxonomies;
 
-    const META_MODEL = 'PostMeta';
-    use Meta;
+    /**
+     * @var Collection|Comment[] The comments
+     */
+    public $comments;
 
+    const META_MODEL = 'PostMeta';
+
+    use Meta;
 }

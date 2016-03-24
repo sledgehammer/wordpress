@@ -9,8 +9,7 @@ use Sledgehammer\Orm\HasManyPlaceholder;
 use Sledgehammer\Orm\Repository;
 
 /**
- * Cleaner way of setting the meta data
- * @package Sledgehammer\Wordpress
+ * Cleaner way of setting the meta data.
  */
 trait Meta
 {
@@ -25,10 +24,11 @@ trait Meta
      * @param $keyOrvalues
      * @param $value
      */
-    function setMeta($keyOrvalues, $value = null) {
+    public function setMeta($keyOrvalues, $value = null)
+    {
         $repo = Repository::instance();
         if (is_array($keyOrvalues)) {
-            foreach($keyOrvalues as $key => $value) {
+            foreach ($keyOrvalues as $key => $value) {
                 $this->setMeta($key, $value);
             }
         } else {
@@ -63,9 +63,11 @@ trait Meta
      *
      * @param string [$key] The name of the meta property, when ommitted getMeta() returns all meta fields in a assoc array.
      * @param mixed [$default] Default returnvalue, when ommitted getMeta() will throw an exception if the property doesn't exist.
+     *
      * @return mixed
      */
-    function getMeta($key = null, $default = null) {
+    public function getMeta($key = null, $default = null)
+    {
         if ($this->meta instanceof HasManyPlaceholder || $this->meta instanceof Collection) {
             $meta = $this->meta;
         } else {
@@ -78,12 +80,13 @@ trait Meta
                     if (array_value($data, $row->key, 0) === '__MULTIRECORD__') {
                         $data[$row->key][] = $row->value;
                     } else {
-                      $data[$row->key] = ['__MULTIRECORD__', $data[$row->key], $row->value];
+                        $data[$row->key] = ['__MULTIRECORD__', $data[$row->key], $row->value];
                     }
                 } else {
                     $data[$row->key] = $row->value;
                 }
             }
+
             return $data;
         }
         $value = $meta->where(['key' => $key]);
@@ -95,21 +98,24 @@ trait Meta
             if (func_num_args() > 1) {
                 return $default;
             }
-            throw new InfoException('Meta field: "'.$key.'" doesn\'t exist in '.str_replace(__NAMESPACE__.'\\Model\\', '', static::class).' '.$this->id, 'Existing fields: '.\Sledgehammer\quoted_human_implode(' or ' , array_keys($meta->selectKey('key')->toArray())));
+            throw new InfoException('Meta field: "'.$key.'" doesn\'t exist in '.str_replace(__NAMESPACE__.'\\Model\\', '', static::class).' '.$this->id, 'Existing fields: '.\Sledgehammer\quoted_human_implode(' or ', array_keys($meta->selectKey('key')->toArray())));
         }
         $data = ['__MULTIRECORD__'];
         foreach ($value as $row) {
             $data[] = $row->value;
         }
+
         return $data;
     }
-    
-    function hasMeta($key) {
+
+    public function hasMeta($key)
+    {
         if ($this->meta instanceof HasManyPlaceholder || $this->meta instanceof Collection) {
             $meta = $this->meta;
         } else {
             throw new Exception('implement support');
         }
+
         return $meta->where(['key' => $key])->count() !== 0;
     }
 

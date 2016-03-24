@@ -17,13 +17,13 @@ class ColorDiff extends Object implements View
     /**
      * @param $text
      */
-    function __construct($old, $new)
+    public function __construct($old, $new)
     {
         $differ = new Differ('');
-        $this->diff = $differ->diff($old, $new);;
+        $this->diff = $differ->diff($old, $new);
     }
 
-    function render()
+    public function render()
     {
         echo '<div style="white-space: pre">';
         $lines = explode("\n", $this->diff);
@@ -41,7 +41,5 @@ class ColorDiff extends Object implements View
             echo "</span>\n";
         }
         echo '</div>';
-
     }
-
 }

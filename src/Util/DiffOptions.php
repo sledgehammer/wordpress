@@ -1,4 +1,5 @@
 <?php
+
 namespace Sledgehammer\Wordpress\Util;
 
 use Sledgehammer\Core\Json;
@@ -12,20 +13,20 @@ use Sledgehammer\Wordpress\Bridge;
 
 class DiffOptions extends Util
 {
-    function __construct()
+    public function __construct()
     {
         parent::__construct('Diff wp_options');
     }
 
-    function generateContent()
+    public function generateContent()
     {
         Bridge::initialize();
         $form = new Form([
             'legend' => 'Compare snapshot',
             'fields' => [
-                new Input(['name' => 'mode', 'type' => 'select', 'options' => ['as source','as target']]),
-                new Input(['name' => 'compare', 'type' => 'submit', 'class'=>'btn btn-primary']),
-                new Input(['name' => 'snapshot', 'type' => 'textarea', 'rows' => 30, 'class' => 'form-control', 'style'=> 'font-family: monospace;']),
+                new Input(['name' => 'mode', 'type' => 'select', 'options' => ['as source', 'as target']]),
+                new Input(['name' => 'compare', 'type' => 'submit', 'class' => 'btn btn-primary']),
+                new Input(['name' => 'snapshot', 'type' => 'textarea', 'rows' => 30, 'class' => 'form-control', 'style' => 'font-family: monospace;']),
 
             ],
         ]);
@@ -49,22 +50,24 @@ class DiffOptions extends Util
         } else {
             $diff = $this->compare($oldValues, $newValues);
         }
+
         return new Template('sledgehammer/wordpress/templates/diff.php', $diff);
     }
 
     /**
      * @return string
      */
-    function createSnapshot()
+    public function createSnapshot()
     {
         $repo = Repository::instance();
         $options = $repo->allOptions()->orderBy('key');
         $sql = $options->getQuery()->andWhere('option_name NOT LIKE "%_transient_%"');
         $options->setQuery($sql);
+
         return $options->select('value', 'key')->toArray();
     }
 
-    function compare($old, $new)
+    public function compare($old, $new)
     {
         $diff = [
             'added' => array_diff_key($new, $old),
@@ -84,7 +87,7 @@ class DiffOptions extends Util
                 $diff['values'][$key] = $newString;
             }
         }
+
         return $diff;
     }
-
 }

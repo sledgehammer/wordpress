@@ -1,4 +1,5 @@
 <?php
+
 namespace Sledgehammer\Wordpress\Model;
 
 use ArrayAccess;
@@ -8,7 +9,6 @@ use Sledgehammer\Core\Collection;
 use Sledgehammer\Core\Object;
 use Sledgehammer\Wordpress\Meta;
 
-
 class Term extends Object implements ArrayAccess
 {
     public $id;
@@ -16,15 +16,14 @@ class Term extends Object implements ArrayAccess
     public $slug;
     public $group;
     /**
-     * @var Taxonomy[]|Collection  A collection with the associated Taxonomy
+     * @var Collection|Taxonomy[] The taxonomy
      */
     public $taxonomy;
     /**
-     * @var TermMeta[]|Collection  A collection with the associated TermMetas
+     * @var Collection|TermMeta[] The meta fields
      */
     public $meta;
 
     const META_MODEL = 'TermMeta';
     use Meta;
 }
-
