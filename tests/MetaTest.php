@@ -1,9 +1,13 @@
 <?php
 
 use Sledgehammer\Core\Collection;
+use Sledgehammer\Core\InfoException;
 use Sledgehammer\Orm\Repository;
 use SledgehammerTests\Core\TestCase;
 
+/**
+ * This test assumes a wordpress environment with the sledgehammer-wordpress plugin enabled.
+ */
 class MetaTest extends TestCase
 {
 
@@ -19,6 +23,15 @@ class MetaTest extends TestCase
         $this->assertEquals('1', $post->getMeta('one'));
         $this->assertEquals('2', $post->getMeta('two'));
         $this->assertEquals(['one' => '1', 'two' => '2'], $post->getMeta());
+        
+        try {
+            $post->getMeta('doesntexist');
+            $this->fail('Reading a non-existing field without providing a default should throw an exception');
+        } catch (InfoException $e) {
+            $this->assertEquals('Meta field: "doesntexist" doesn\'t exist in Post ', $e->getMessage());
+            $this->assertEquals('Existing fields: "one" or "two"', $e->getInformation());
+        }
+        $this->assertEquals('defaultValue', $post->getMeta('doesntexist','defaultValue'), 'Should return the default value if one is provided');
     }
     
     function testWrite() {

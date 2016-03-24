@@ -15,6 +15,8 @@ use Sledgehammer\Orm\Repository;
 trait Meta
 {
     /**
+     * Set meta records.
+     *
      * Usage:
      *   $post->setMeta(['my_key' => 'my_value']);
      * or
@@ -56,7 +58,14 @@ trait Meta
         }
     }
 
-    function getMeta($key = null) {
+    /**
+     * Read meta records.
+     *
+     * @param string [$key] The name of the meta property, when ommitted getMeta() returns all meta fields in a assoc array.
+     * @param mixed [$default] Default returnvalue, when ommitted getMeta() will throw an exception if the property doesn't exist.
+     * @return mixed
+     */
+    function getMeta($key = null, $default = null) {
         if ($this->meta instanceof HasManyPlaceholder || $this->meta instanceof Collection) {
             $meta = $this->meta;
         } else {
@@ -83,7 +92,10 @@ trait Meta
                 return $metaField->value;
             }
         } elseif (count($value) == 0) {
-            throw new InfoException('Meta field: "'.$key.'" doesn\'t exist in Post('.$this->id.')', 'Existing fields: '.\Sledgehammer\quoted_human_implode(' or ' , array_keys($meta->selectKey('key')->toArray())));
+            if (func_num_args() > 1) {
+                return $default;
+            }
+            throw new InfoException('Meta field: "'.$key.'" doesn\'t exist in '.str_replace(__NAMESPACE__.'\\Model\\', '', static::class).' '.$this->id, 'Existing fields: '.\Sledgehammer\quoted_human_implode(' or ' , array_keys($meta->selectKey('key')->toArray())));
         }
         $data = ['__MULTIRECORD__'];
         foreach ($value as $row) {
@@ -98,7 +110,7 @@ trait Meta
         } else {
             throw new Exception('implement support');
         }
-        return $meta->where(['key' => $offset])->count() !== 0;
+        return $meta->where(['key' => $key])->count() !== 0;
     }
 
     public function offsetExists($offset)
