@@ -144,6 +144,8 @@ class WordpressRepositoryBackend extends DatabaseRepositoryBackend
         $this->configs['Post']->hasMany['comments'] = [
             'model' => 'Comment',
             'reference' => 'comment_post_ID',
+            'id' => 'post_id',
+            'belongsTo' => 'post',
         ];
 
         $this->skipProperty('Post', 'post_author');
@@ -156,6 +158,7 @@ class WordpressRepositoryBackend extends DatabaseRepositoryBackend
             'content_filtered' => '',
             'meta' => [],
             'taxonomies' => [],
+            'comments' => [],
             'date' => current_time('mysql'),
             'date_gmt' => current_time('mysql', true),
             'modified' => current_time('mysql'),
@@ -211,7 +214,14 @@ class WordpressRepositoryBackend extends DatabaseRepositoryBackend
             'model' => 'CommentMeta',
             'reference' => 'comment_id',
             'id' => 'comment_id',
-//            'belongsTo' => 'Comment'
+            'belongsTo' => 'comment'
+        ];
+        $this->configs['Comment']->defaults = array_merge($this->configs['Comment']->defaults, [
+            'meta' => []
+        ]);
+        $this->configs['Commentmetum']->belongsTo['comment'] = [
+            'model' => 'Comment',
+            'reference' => 'comment_id',
         ];
 
         // Option
