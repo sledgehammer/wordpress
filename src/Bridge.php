@@ -45,18 +45,9 @@ class Bridge extends Object
             Connection::$instances['default'] = 'wordpress';
         }
         // Sledgehammer ORM configuration
-        if (empty(Repository::$instances['default'])) {
-            Repository::$instances['default'] = function () {
-                $repo = new Repository();
-                Repository::$instances['default'] = $repo;
-                $repo->registerBackend(new WordpressRepositoryBackend());
-
-                return $repo;
-            };
-        } else {
-            $repo = Repository::instance();
-            $repo->registerBackend(new WordpressRepositoryBackend());
-        }
+        Repository::configureDefault(function ($repo) {
+           $repo->registerBackend(new WordpressRepositoryBackend()); 
+        });
 
         if (defined('Sledgehammer\WEBPATH') === false) {
             $url = new Url(WP_HOME);

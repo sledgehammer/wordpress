@@ -16,6 +16,8 @@ use Sledgehammer\Wordpress\Model\Term;
  */
 class WordpressRepositoryBackend extends DatabaseRepositoryBackend
 {
+    public $identifier = 'wordpress';
+
     public function __construct()
     {
         if (empty($GLOBALS['table_prefix'])) {
