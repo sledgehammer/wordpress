@@ -9,7 +9,7 @@ use Sledgehammer\Core\Debug\Logger;
 use Sledgehammer\Core\Debug\ErrorHandler;
 use Sledgehammer\Core\Object;
 use Sledgehammer\Core\Url;
-use Sledgehammer\Mvc\Template;
+use Sledgehammer\Mvc\Component\Template;
 use Sledgehammer\Orm\Repository;
 
 class Bridge extends Object

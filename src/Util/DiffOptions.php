@@ -7,7 +7,7 @@ use Sledgehammer\Devutils\Util;
 use Sledgehammer\Mvc\Component\Dialog;
 use Sledgehammer\Mvc\Component\Form;
 use Sledgehammer\Mvc\Component\Input;
-use Sledgehammer\Mvc\Template;
+use Sledgehammer\Mvc\Component\Template;
 use Sledgehammer\Orm\Repository;
 use Sledgehammer\Wordpress\Bridge;
 

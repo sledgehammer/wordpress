@@ -5,9 +5,9 @@ namespace Sledgehammer\Wordpress\Util;
 use SebastianBergmann\Diff\Differ;
 use Sledgehammer\Core\Html;
 use Sledgehammer\Core\Object;
-use Sledgehammer\Mvc\View;
+use Sledgehammer\Mvc\Component;
 
-class ColorDiff extends Object implements View
+class ColorDiff extends Object implements Component
 {
     /**
      * @var string Output from the SebastianBergmann\Diff\Differ
