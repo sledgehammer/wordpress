@@ -21,31 +21,28 @@ class DiffOptions extends Util
     public function generateContent()
     {
         Bridge::initialize();
+        $value = chunk_split(base64_encode(Json::encode($this->createSnapshot())));
         $form = new Form([
             'legend' => 'Compare snapshot',
             'fields' => [
-                new Input(['name' => 'mode', 'type' => 'select', 'options' => ['as source', 'as target']]),
-                new Input(['name' => 'compare', 'type' => 'submit', 'class' => 'btn btn-primary']),
-                new Input(['name' => 'snapshot', 'type' => 'textarea', 'rows' => 30, 'class' => 'form-control', 'style' => 'font-family: monospace;']),
-
+                'direction' => new Input(['name' => 'mode', 'type' => 'select', 'options' => ['as source', 'as target'], 'value' => 'as source']),
+                'btn' => new Input(['name' => 'compare', 'type' => 'submit', 'class' => 'btn btn-primary', 'value' => 'Compare']),
+                'snapshot' => new Input(['name' => 'snapshot', 'type' => 'textarea', 'rows' => 30, 'class' => 'form-control', 'style' => 'font-family: monospace;', 'value' => $value]),
             ],
         ]);
-        $form->initial([
-            'source',
-            'Compare',
-            chunk_split(base64_encode(Json::encode($this->createSnapshot()))),
-        ]);
-        $data = $form->import($errors);
-        if ($data === null) {
+
+        $data = $form->import();
+
+        if ($form->isSent() === false) {
             return $form;
         }
         $newValues = $this->createSnapshot();
         $newSnapshot = chunk_split(base64_encode(Json::encode($newValues)));
-        if ($data[2] === $newSnapshot) {
+        if ($data['snapshot'] === $newSnapshot) {
             return new Dialog('No changes detected', 'No changes detected in the <b>wp_options</b> table.');
         }
-        $oldValues = Json::decode(base64_decode($data[2]), true);
-        if ($data[0] === 'as target') {
+        $oldValues = Json::decode(base64_decode($data['snapshot']), true);
+        if ($data['direction'] === 'as target') {
             $diff = $this->compare($newValues, $oldValues);
         } else {
             $diff = $this->compare($oldValues, $newValues);

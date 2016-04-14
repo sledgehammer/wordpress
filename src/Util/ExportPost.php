@@ -4,6 +4,7 @@ namespace Sledgehammer\Wordpress\Util;
 
 use Exception;
 use Sledgehammer\Devutils\Util;
+use Sledgehammer\Mvc\Component\Button;
 use Sledgehammer\Mvc\Component\Form;
 use Sledgehammer\Mvc\Component\Input;
 use Sledgehammer\Mvc\Component\Template;
@@ -35,18 +36,18 @@ class ExportPost extends Util
                     'type' => 'select',
                     'options' => $options,
                     'label' => 'Select post',
+                    'value' => $lastPosts[0]->id,
                     ]),
                 'id' => new Input(['name' => 'custom', 'class' => 'form-control', 'label' => 'Custom ID']),
-                'varname' => new Input(['name' => 'varname', 'class' => 'form-control', 'label' => 'Variable name']),
+                'varname' => new Input(['name' => 'varname', 'class' => 'form-control', 'label' => 'Variable name', 'value' => '$post']),
                 'export_defaults' => new Input(['name' => 'export_defaults', 'type' => 'checkbox', 'label' => 'Force defaults (verbose export)']),
             ],
             'actions' => [
-                'Export',
+                new Button('Export', ['class' => 'btn btn-primary']),
             ],
         ]);
-        $form->initial(['post' => $lastPosts[0]->id, 'varname' => '$post']);
-        $values = $form->import($errors);
-        if ($values) {
+        $values = $form->import();
+        if ($form->isSent()) {
             if ($values['id'] !== '') {
                 $form->initial(['post' => $values['id']]);
                 $id = $values['id'];

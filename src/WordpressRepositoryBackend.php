@@ -216,10 +216,10 @@ class WordpressRepositoryBackend extends DatabaseRepositoryBackend
             'model' => 'CommentMeta',
             'reference' => 'comment_id',
             'id' => 'comment_id',
-            'belongsTo' => 'comment'
+            'belongsTo' => 'comment',
         ];
         $this->configs['Comment']->defaults = array_merge($this->configs['Comment']->defaults, [
-            'meta' => []
+            'meta' => [],
         ]);
         $this->configs['Commentmetum']->belongsTo['comment'] = [
             'model' => 'Comment',

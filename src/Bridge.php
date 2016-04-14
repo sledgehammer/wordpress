@@ -46,7 +46,7 @@ class Bridge extends Object
         }
         // Sledgehammer ORM configuration
         Repository::configureDefault(function ($repo) {
-           $repo->registerBackend(new WordpressRepositoryBackend()); 
+           $repo->registerBackend(new WordpressRepositoryBackend());
         });
 
         if (defined('Sledgehammer\WEBPATH') === false) {
