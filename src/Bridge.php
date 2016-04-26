@@ -57,7 +57,7 @@ class Bridge extends Object
         }
         define('WEBPATH', \Sledgehammer\WEBPATH);
 
-        if (WP_DEBUG) {
+        if (WP_DEBUG || !empty($_GET[\Sledgehammer\DEBUG_VAR])) {
             add_action('admin_enqueue_scripts', function () {
                 wp_enqueue_style('sh-debug', '/../core/css/debug.css');
             });
