@@ -67,20 +67,20 @@ class ExportTaxonomy extends Util
             
             $php .= "\n\n";
             
-            if ($taxonomy->posts->count() > 0) {
-                $php .= "\$repo->resolveProperty(".$var.", 'posts', ['model' => 'Taxonomy']);\n";
-                foreach ($taxonomy->posts as $post) {
-                    $php .= $var."->posts[] = ";
-                    $phpPost = "\$repo->onePost(['AND', 'type' => ".var_export($post->type, true).", 'slug' => ".var_export($post->slug, true)."])";
-                    if ($post->order == '0') {
-                        $php .= $phpPost.";\n";
-                    } else {
-                        $php .= "new Sledgehammer\Orm\Junction(".$phpPost.", ['order' => ".var_export($post->order, true)."]);\n";
-                    }
-                }
-                $php .= $var."->count = ".$var."->posts->count();\n";
-                $mustSave = true;
-            }
+//            if ($taxonomy->posts->count() > 0) {
+//                $php .= "\$repo->resolveProperty(".$var.", 'posts', ['model' => 'Taxonomy']);\n";
+//                foreach ($taxonomy->posts as $post) {
+//                    $php .= $var."->posts[] = ";
+//                    $phpPost = "\$repo->onePost(['AND', 'type' => ".var_export($post->type, true).", 'slug' => ".var_export($post->slug, true)."])";
+//                    if ($post->order == '0') {
+//                        $php .= $phpPost.";\n";
+//                    } else {
+//                        $php .= "new Sledgehammer\Orm\Junction(".$phpPost.", ['order' => ".var_export($post->order, true)."]);\n";
+//                    }
+//                }
+//                $php .= $var."->count = ".$var."->posts->count();\n";
+//                $mustSave = true;
+//            }
             if ($mustSave) {
                 $php .= "\$repo->saveTaxonomy(".$var.");\n";
             }
