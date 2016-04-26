@@ -49,7 +49,7 @@ class ExportPost extends Util
         $values = $form->import();
         if ($form->isSent()) {
             if ($values['id'] !== '') {
-                $form->initial(['post' => $values['id']]);
+                $form->setValue(['post' => $values['id']]);
                 $id = $values['id'];
             } else {
                 $id = $values['post'];

@@ -204,6 +204,13 @@ class WordpressRepositoryBackend extends DatabaseRepositoryBackend
             'reference' => 'term_id',
         ];
         $this->configs['TermTaxonomy']->defaults['description'] = '';
+        $this->configs['TermTaxonomy']->hasMany['posts'] = [
+            'model' => 'Post',
+            'through' => 'TermRelationship',
+            'reference' => 'term_taxonomy_id',
+            'id' => 'object_id',
+            'fields' => ['term_order' => 'order'],
+        ];
 
         // Comment
         $this->skipProperty('Comment', 'comment_post_ID');
