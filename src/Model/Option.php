@@ -2,10 +2,10 @@
 
 namespace Sledgehammer\Wordpress\Model;
 
-use Sledgehammer\Core\Object;
+use Sledgehammer\Core\Base;
 use Sledgehammer\Orm\Repository;
 
-class Option extends Object
+class Option extends Base
 {
     public $id;
     public $key;

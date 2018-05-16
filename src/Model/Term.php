@@ -6,10 +6,10 @@ use ArrayAccess;
 use Generated\TermMeta;
 use Generated\Taxonomy;
 use Sledgehammer\Core\Collection;
-use Sledgehammer\Core\Object;
+use Sledgehammer\Core\Base;
 use Sledgehammer\Wordpress\Meta;
 
-class Term extends Object implements ArrayAccess
+class Term extends Base implements ArrayAccess
 {
     public $id;
     public $name;

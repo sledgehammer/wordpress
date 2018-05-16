@@ -1,15 +1,16 @@
 {
-	"name": "sledgehammer/wordpress",
-	"description": "Wordpress database access via the Sledgehammer ORM",
-	"type": "library",
-	"license": "CC-BY-SA-3.0",
-	"require": {
-		"sledgehammer/orm": "*",
-		"sebastian/diff": "*"
-	},
-        "autoload": {
-            "psr-4": {
-                "Sledgehammer\\Wordpress\\": "src"
-            }
-        }
+  "name": "sledgehammer/wordpress",
+  "description": "Wordpress database access via the Sledgehammer ORM",
+  "type": "library",
+  "license": "CC-BY-SA-3.0",
+  "require": {
+    "sledgehammer/orm": "*",
+    "sledgehammer/mvc": "^18.04",
+    "sebastian/diff": "*"
+  },
+  "autoload": {
+    "psr-4": {
+      "Sledgehammer\\Wordpress\\": "src"
+    }
+  }
 }

@@ -7,12 +7,12 @@ use Sledgehammer\Core\Database\Connection;
 use Sledgehammer\Core\Debug\DebugR;
 use Sledgehammer\Core\Debug\Logger;
 use Sledgehammer\Core\Debug\ErrorHandler;
-use Sledgehammer\Core\Object;
+use Sledgehammer\Core\Base;
 use Sledgehammer\Core\Url;
 use Sledgehammer\Mvc\Component\Template;
 use Sledgehammer\Orm\Repository;
 
-class Bridge extends Object
+class Bridge extends Base
 {
     /**
      * Inspect the worpress database and.
@@ -46,7 +46,7 @@ class Bridge extends Object
         }
         // Sledgehammer ORM configuration
         Repository::configureDefault(function ($repo) {
-           $repo->registerBackend(new WordpressRepositoryBackend());
+            $repo->registerBackend(new WordpressRepositoryBackend());
         });
 
         if (defined('Sledgehammer\WEBPATH') === false) {

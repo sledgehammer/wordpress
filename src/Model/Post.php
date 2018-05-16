@@ -6,13 +6,13 @@ use ArrayAccess;
 use Generated\PostMeta;
 use Generated\Taxonomy;
 use Generated\User;
-use Sledgehammer\Core\Object;
+use Sledgehammer\Core\Base;
 use Sledgehammer\Wordpress\Meta;
 
 /**
  * Wordpress "post".
  */
-class Post extends Object implements ArrayAccess
+class Post extends Base implements ArrayAccess
 {
     public $id;
     public $date;

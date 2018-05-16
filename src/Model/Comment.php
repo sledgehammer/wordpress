@@ -4,10 +4,10 @@ namespace Sledgehammer\Wordpress\Model;
 
 use ArrayAccess;
 use Sledgehammer\Core\Collection;
-use Sledgehammer\Core\Object;
+use Sledgehammer\Core\Base;
 use Sledgehammer\Wordpress\Meta;
 
-class Comment extends Object implements ArrayAccess
+class Comment extends Base implements ArrayAccess
 {
     public $id;
     public $author;

@@ -3,10 +3,10 @@
 namespace Sledgehammer\Wordpress;
 
 use Generated\Taxonomy;
-use Sledgehammer\Core\Object;
+use Sledgehammer\Core\Base;
 use Sledgehammer\Orm\Repository;
 
-class Migrate extends Object
+class Migrate extends Base
 {
     /**
      * Create or fetch existing taxonomy.
