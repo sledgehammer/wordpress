@@ -238,7 +238,7 @@ class WordpressRepositoryBackend extends DatabaseRepositoryBackend
         $this->configs['Option']->class = Option::class;
 
         //
-        if ($this->configs['Podsrel']) { // Pods plugin enabled?
+        if (array_key_exists('Podsrel', $this->configs)) { // Pods plugin enabled?
             $this->renameModel('Podsrel', 'PodsRelationship');
             $this->skipProperty('Podsrel', 'pod_id');
             $this->skipProperty('Podsrel', 'field_id');
