@@ -25,7 +25,7 @@ class ExportTaxonomy extends Util
         $lastPosts = $repo->allTaxonomies()->orderByDescending('id')->take(25); //['AND', 'status !=' => 'auto-draft', 'type !=' => 'revision']
         $options = $lastPosts->select(function ($taxonomy) {
                 return $taxonomy->id.') '.$taxonomy->taxonomy.' - '.$taxonomy->term->name;
-            }, 'id')->toArray();
+        }, 'id')->toArray();
         \Sledgehammer\array_key_unshift($options, 'custom', 'Custom ID');
         $form = new Form([
             'method' => 'GET',
@@ -90,5 +90,4 @@ class ExportTaxonomy extends Util
 
         return $form;
     }
-
 }

@@ -24,8 +24,8 @@ class ExportPost extends Util
         $repo = Repository::instance();
         $lastPosts = $repo->allPosts(['AND', 'status !=' => 'auto-draft', 'type !=' => 'revision'])->orderByDescending('id')->take(25);
         $options = $lastPosts->select(function ($post) {
-                return $post->id.') '.$post->type.' - '.$post->slug;
-            }, 'id')->toArray();
+            return $post->id.') '.$post->type.' - '.$post->slug;
+        }, 'id')->toArray();
         \Sledgehammer\array_key_unshift($options, 'custom', 'Custom ID');
         $form = new Form([
             'method' => 'GET',

@@ -3,7 +3,7 @@
 use Sledgehammer\Core\Html;
 use Sledgehammer\Core\Json;
 
-if ($changes): ?>
+if ($changes) : ?>
         <table class="table">
             <thead>
             <tr>
@@ -13,7 +13,7 @@ if ($changes): ?>
             </tr>
             </thead>
             <tbody>
-            <?php foreach ($changes as $key => $change): ?>
+            <?php foreach ($changes as $key => $change) : ?>
                 <tr>
                     <td style="white-space: nowrap"><?= Html::escape($key) ?></td>
                     <td style="max-width: 44vw"><?php
@@ -29,7 +29,7 @@ if ($changes): ?>
             </tbody>
         </table>
 <?php endif;
-if ($added): ?>
+if ($added) : ?>
     <table class="table" style="width: auto">
         <thead>
         <tr>
@@ -38,7 +38,7 @@ if ($added): ?>
         </tr>
         </thead>
         <tbody>
-        <?php foreach ($added as $key => $value): ?>
+        <?php foreach ($added as $key => $value) : ?>
             <tr>
                 <td><?= Html::escape($key); ?></td>
                 <td style="max-width: 100em"><?php
@@ -52,7 +52,7 @@ if ($added): ?>
         </tbody>
     </table>
 <?php endif;
-if ($removed): ?>
+if ($removed) : ?>
     <table class="table" style="width: auto;">
         <thead>
         <tr>
@@ -60,7 +60,7 @@ if ($removed): ?>
         </tr>
         </thead>
         <tbody>
-        <?php foreach ($removed as $key => $value): ?>
+        <?php foreach ($removed as $key => $value) : ?>
             <tr>
                 <td><?= Html::escape($key); ?></td>
             </tr>
