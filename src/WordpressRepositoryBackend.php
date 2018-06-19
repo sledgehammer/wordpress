@@ -8,6 +8,7 @@ use Sledgehammer\Wordpress\Model\Comment;
 use Sledgehammer\Wordpress\Model\Option;
 use Sledgehammer\Wordpress\Model\Post;
 use Sledgehammer\Wordpress\Model\Term;
+use Sledgehammer\Wordpress\Model\User;
 
 /**
  * Description of WordpressRepositoryBackend.
@@ -17,6 +18,7 @@ use Sledgehammer\Wordpress\Model\Term;
 class WordpressRepositoryBackend extends DatabaseRepositoryBackend
 {
     public $identifier = 'wordpress';
+    public static $cacheTimeout = '5min';
 
     public function __construct()
     {
@@ -66,6 +68,11 @@ class WordpressRepositoryBackend extends DatabaseRepositoryBackend
                 'user_registered' => 'registered',
                 'user_activation_key' => 'activation_key',
                 'user_status' => 'status',
+            ],
+            'Usermetum' => [
+                'umeta_id' => 'id',
+                'meta_key' => 'key',
+                'meta_value' => 'value',
             ],
             'Option' => [
                 'option_id' => 'id',
@@ -233,6 +240,27 @@ class WordpressRepositoryBackend extends DatabaseRepositoryBackend
             'model' => 'Comment',
             'reference' => 'comment_id',
         ];
+        // User
+        $this->configs['User']->class = User::class;
+        $this->configs['User']->hasMany['meta'] = [
+            'model' => 'UserMeta',
+            'reference' => 'user_id',
+            'id' => 'ID',
+            'belongsTo' => 'user',
+        ];
+        $this->configs['User']->hasMany['posts'] = [
+            'model' => 'Post',
+            'reference' => 'post_author',
+            'id' => 'ID',
+            'belongsTo' => 'post',
+        ];
+        $this->configs['User']->hasMany['comments'] = [
+            'model' => 'Comment',
+            'reference' => 'comment_author',
+             'id' => 'ID',
+             'belongsTo' => 'comment',
+         ];
+        $this->configs['User']->defaults['posts'] = [];
 
         // Option
         $this->configs['Option']->class = Option::class;
@@ -286,5 +314,32 @@ class WordpressRepositoryBackend extends DatabaseRepositoryBackend
         }
 
         return $value;
+    }
+
+    public function getSchema($db, $prefix = '')
+    {
+        $schema = parent::getSchema($db, $prefix);
+        $whitelist = [
+            'commentmeta',
+            'comments',
+            'links',
+            'options',
+            'postmeta',
+            'posts',
+            'term_relationships',
+            'term_taxonomy',
+            'termmeta',
+            'terms',
+            'usermeta',
+            'users'
+        ];
+        $filteredSchema = [];
+        foreach ($whitelist as $item) {
+            $table = $prefix.$item;
+            if (array_key_exists($table, $schema)) {
+                $filteredSchema[$table] = $schema[$table];
+            }
+        }
+        return $filteredSchema;
     }
 }
