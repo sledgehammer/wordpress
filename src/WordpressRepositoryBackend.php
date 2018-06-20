@@ -5,10 +5,15 @@ namespace Sledgehammer\Wordpress;
 use Exception;
 use Sledgehammer\Orm\Backend\DatabaseRepositoryBackend;
 use Sledgehammer\Wordpress\Model\Comment;
+use Sledgehammer\Wordpress\Model\CommentMeta;
 use Sledgehammer\Wordpress\Model\Option;
 use Sledgehammer\Wordpress\Model\Post;
+use Sledgehammer\Wordpress\Model\PostMeta;
 use Sledgehammer\Wordpress\Model\Term;
+use Sledgehammer\Wordpress\Model\TermMeta;
 use Sledgehammer\Wordpress\Model\User;
+use Sledgehammer\Wordpress\Model\UserMeta;
+use Sledgehammer\Wordpress\Model\Link;
 
 /**
  * Description of WordpressRepositoryBackend.
@@ -35,6 +40,46 @@ class WordpressRepositoryBackend extends DatabaseRepositoryBackend
 
         // Column to property mapping
         $map = [
+            'Comment' => [
+                'comment_ID' => 'id',
+                'comment_author' => 'author',
+                'comment_author_email' => 'email',
+                'comment_author_url' => 'url',
+                'comment_date' => 'date',
+                'comment_date_gmt' => 'date_gmt',
+                'comment_content' => 'content',
+                'comment_karma' => 'karma',
+                'comment_approved' => 'approved',
+                'comment_author_IP' => 'ip',
+                'comment_agent' => 'useragent',
+                'comment_type' => 'type',
+                'comment_parent' => 'parent_id',
+            ],
+            'Commentmetum' => [
+                'meta_id' => 'id',
+                'meta_key' => 'key',
+                'meta_value' => 'value',
+            ],
+            'Link'=> [
+                'link_id' => 'id',
+                'link_url' => 'url',
+                'link_name' => 'name',
+                'link_image' => 'image',
+                'link_target' => 'target',
+                'link_description' => 'description',
+                'link_visible' => 'visible',
+                'link_owner' => 'owner',
+                'link_rating' => 'rating',
+                'link_updated' => 'updated',
+                'link_rel' => 'rel',
+                'link_notes' => 'notes',
+                'link_rss' => 'rss',
+            ],
+            'Option' => [
+                'option_id' => 'id',
+                'option_name' => 'key',
+                'option_value' => 'value',
+            ],
             'Post' => [
                 'iD' => 'id',
                 'post_title' => 'title',
@@ -58,6 +103,19 @@ class WordpressRepositoryBackend extends DatabaseRepositoryBackend
                 'meta_key' => 'key',
                 'meta_value' => 'value',
             ],
+            'Term' => [
+                'term_id' => 'id',
+                'term_group' => 'group',
+            ],
+            'Termmetum' => [
+                'meta_id' => 'id',
+                'meta_key' => 'key',
+                'meta_value' => 'value',
+            ],
+            'TermTaxonomy' => [
+                'term_taxonomy_id' => 'id',
+                'parent' => 'parent_id',
+            ],
             'User' => [
                 'iD' => 'id',
                 'user_login' => 'login',
@@ -74,44 +132,6 @@ class WordpressRepositoryBackend extends DatabaseRepositoryBackend
                 'meta_key' => 'key',
                 'meta_value' => 'value',
             ],
-            'Option' => [
-                'option_id' => 'id',
-                'option_name' => 'key',
-                'option_value' => 'value',
-            ],
-            'Term' => [
-                'term_id' => 'id',
-                'term_group' => 'group',
-            ],
-            'Termmetum' => [
-                'meta_id' => 'id',
-                'meta_key' => 'key',
-                'meta_value' => 'value',
-            ],
-            'TermTaxonomy' => [
-                'term_taxonomy_id' => 'id',
-                'parent' => 'parent_id',
-            ],
-            'Comment' => [
-                'comment_ID' => 'id',
-                'comment_author' => 'author',
-                'comment_author_email' => 'email',
-                'comment_author_url' => 'url',
-                'comment_date' => 'date',
-                'comment_date_gmt' => 'date_gmt',
-                'comment_content' => 'content',
-                'comment_karma' => 'karma',
-                'comment_approved' => 'approved',
-                'comment_author_IP' => 'ip',
-                'comment_agent' => 'useragent',
-                'comment_type' => 'type',
-                'comment_parent' => 'parent_id',
-            ],
-            'Commentmetum' => [
-                'meta_id' => 'id',
-                'meta_key' => 'key',
-                'meta_value' => 'value',
-            ],
         ];
 
         foreach ($map as $model => $properties) {
@@ -119,12 +139,13 @@ class WordpressRepositoryBackend extends DatabaseRepositoryBackend
                 $this->renameProperty($model, $from, $to);
             }
         }
-        // read & write filters
+        // read & write array filters
         $mayContainArray = [
             'Option' => 'option_value',
             'Postmetum' => 'meta_value',
             'Termmetum' => 'meta_value',
             'Commentmetum' => 'meta_value',
+            'Usermetum' => 'meta_value',
         ];
 
         foreach ($mayContainArray as $model => $column) {
@@ -132,7 +153,42 @@ class WordpressRepositoryBackend extends DatabaseRepositoryBackend
             $this->configs[$model]->writeFilters[$column] = [self::class, 'arrayWriteFilter'];
         }
 
-        // Post tweaks
+        // Comment
+        $this->skipProperty('Comment', 'comment_post_ID');
+        $this->configs['Comment']->class = Comment::class;
+        $this->configs['Comment']->belongsTo['post'] = [
+            'model' => 'Post',
+            'reference' => 'comment_post_ID',
+        ];
+        $this->configs['Comment']->belongsTo['user'] = [
+            'model' => 'User',
+            'reference' => 'user_id',
+        ];
+        $this->configs['Comment']->hasMany['meta'] = [
+            'model' => 'CommentMeta',
+            'reference' => 'comment_id',
+            'id' => 'comment_id',
+            'belongsTo' => 'comment',
+        ];
+        $this->configs['Comment']->defaults = array_merge($this->configs['Comment']->defaults, [
+            'meta' => [],
+        ]);
+        $this->skipProperty('Comment', 'user_id');
+        $this->configs['Commentmetum']->class = CommentMeta::class;
+        $this->configs['Commentmetum']->belongsTo['comment'] = [
+            'model' => 'Comment',
+            'reference' => 'comment_id',
+        ];
+        $this->skipProperty('Commentmetum', 'comment_id');
+
+        // Link
+        $this->configs['Link']->class = Link::class;
+
+        // Option
+        $this->configs['Option']->class = Option::class;
+        
+        // Post
+        $this->configs['Post']->class = Post::class;
         $this->configs['Post']->belongsTo['author'] = [
             'model' => 'User',
             'reference' => 'post_author',
@@ -158,7 +214,6 @@ class WordpressRepositoryBackend extends DatabaseRepositoryBackend
         ];
 
         $this->skipProperty('Post', 'post_author');
-        $this->configs['Post']->class = Post::class;
         $this->configs['Post']->defaults = array_merge($this->configs['Post']->defaults, [
             'excerpt' => '',
             'to_ping' => '',
@@ -174,12 +229,28 @@ class WordpressRepositoryBackend extends DatabaseRepositoryBackend
             'modified_gmt' => current_time('mysql', true),
         ]);
 
-        // PostMeta tweaks
+        $this->configs['Postmetum']->class = PostMeta::class;
         $this->configs['Postmetum']->belongsTo['post'] = [
             'model' => 'Post',
             'reference' => 'post_id',
         ];
         $this->skipProperty('Postmetum', 'post_id');
+
+        // Taxonomy
+        $this->skipProperty('TermTaxonomy', 'term_id');
+        $this->configs['TermTaxonomy']->belongsTo['term'] = [
+            'model' => 'Term',
+            'reference' => 'term_id',
+        ];
+        $this->configs['TermTaxonomy']->defaults['description'] = '';
+        $this->configs['TermTaxonomy']->hasMany['posts'] = [
+           'model' => 'Post',
+           'through' => 'TermRelationship',
+           'reference' => 'term_taxonomy_id',
+           'id' => 'object_id',
+           'fields' => ['term_order' => 'order'],
+        ];
+        $this->configs['TermTaxonomy']->defaults['posts'] = [];
 
         // Term
         $this->configs['Term']->class = Term::class;
@@ -197,49 +268,13 @@ class WordpressRepositoryBackend extends DatabaseRepositoryBackend
         ];
         $this->configs['Term']->defaults['meta'] = [];
 
-        // TermMeta
+        $this->configs['Termmetum']->class = TermMeta::class;
         $this->configs['Termmetum']->belongsTo['term'] = [
             'model' => 'Term',
             'reference' => 'term_id',
         ];
         $this->skipProperty('Termmetum', 'term_id');
 
-        // Taxonomy
-        $this->skipProperty('TermTaxonomy', 'term_id');
-        $this->configs['TermTaxonomy']->belongsTo['term'] = [
-            'model' => 'Term',
-            'reference' => 'term_id',
-        ];
-        $this->configs['TermTaxonomy']->defaults['description'] = '';
-//        $this->configs['TermTaxonomy']->hasMany['posts'] = [
-//            'model' => 'Post',
-//            'through' => 'TermRelationship',
-//            'reference' => 'term_taxonomy_id',
-//            'id' => 'object_id',
-//            'fields' => ['term_order' => 'order'],
-//        ];
-//        $this->configs['TermTaxonomy']->defaults['posts'] = [];
-
-        // Comment
-        $this->skipProperty('Comment', 'comment_post_ID');
-        $this->configs['Comment']->class = Comment::class;
-        $this->configs['Comment']->belongsTo['post'] = [
-            'model' => 'Post',
-            'reference' => 'comment_post_ID',
-        ];
-        $this->configs['Comment']->hasMany['meta'] = [
-            'model' => 'CommentMeta',
-            'reference' => 'comment_id',
-            'id' => 'comment_id',
-            'belongsTo' => 'comment',
-        ];
-        $this->configs['Comment']->defaults = array_merge($this->configs['Comment']->defaults, [
-            'meta' => [],
-        ]);
-        $this->configs['Commentmetum']->belongsTo['comment'] = [
-            'model' => 'Comment',
-            'reference' => 'comment_id',
-        ];
         // User
         $this->configs['User']->class = User::class;
         $this->configs['User']->hasMany['meta'] = [
@@ -262,11 +297,15 @@ class WordpressRepositoryBackend extends DatabaseRepositoryBackend
          ];
         $this->configs['User']->defaults['posts'] = [];
 
-        // Option
-        $this->configs['Option']->class = Option::class;
+        $this->configs['Usermetum']->class = UserMeta::class;
+        $this->configs['Usermetum']->belongsTo['user'] = [
+            'model' => 'User',
+            'reference' => 'user_id',
+        ];
+        $this->skipProperty('Usermetum', 'user_id');
 
-        //
-        if (array_key_exists('Podsrel', $this->configs)) { // Pods plugin enabled?
+        // Pods plugin enabled?
+        if (array_key_exists('Podsrel', $this->configs)) {
             $this->renameModel('Podsrel', 'PodsRelationship');
             $this->skipProperty('Podsrel', 'pod_id');
             $this->skipProperty('Podsrel', 'field_id');
@@ -296,7 +335,6 @@ class WordpressRepositoryBackend extends DatabaseRepositoryBackend
                 return $array;
             }
         }
-
         return $value;
     }
 
@@ -312,7 +350,6 @@ class WordpressRepositoryBackend extends DatabaseRepositoryBackend
         if (is_array($value)) {
             return serialize($value);
         }
-
         return $value;
     }
 

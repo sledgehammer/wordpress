@@ -3,8 +3,6 @@
 namespace Sledgehammer\Wordpress\Model;
 
 use ArrayAccess;
-use Generated\TermMeta;
-use Generated\Taxonomy;
 use Sledgehammer\Core\Collection;
 use Sledgehammer\Core\Base;
 use Sledgehammer\Wordpress\Meta;

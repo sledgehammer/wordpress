@@ -3,9 +3,6 @@
 namespace Sledgehammer\Wordpress\Model;
 
 use ArrayAccess;
-use Generated\PostMeta;
-use Generated\Taxonomy;
-use Generated\User;
 use Sledgehammer\Core\Base;
 use Sledgehammer\Wordpress\Meta;
 

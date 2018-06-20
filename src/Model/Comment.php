@@ -21,8 +21,11 @@ class Comment extends Base implements ArrayAccess
     public $approved;
     public $useragent;
     public $type;
+
     public $parent_id;
-    public $user_id;
+
+    
+    public $user;
 
     /**
      * @var Post
