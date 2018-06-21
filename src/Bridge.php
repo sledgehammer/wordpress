@@ -57,9 +57,9 @@ class Bridge extends Base
         }
         define('WEBPATH', \Sledgehammer\WEBPATH);
 
-        if (WP_DEBUG || !empty($_GET[\Sledgehammer\DEBUG_VAR])) {
+        if (WP_DEBUG) {
             add_action('admin_enqueue_scripts', function () {
-                wp_enqueue_style('sh-debug', '/../core/css/debug.css');
+                wp_enqueue_style('sh-debug', 'https://rawgit.com/sledgehammer/core/master/public/css/debug.css');
             });
             add_action('admin_footer', [self::class, 'statusbar']);
             add_action('wp_footer', [self::class, 'statusbar']);
