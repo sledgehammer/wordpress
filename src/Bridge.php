@@ -50,14 +50,21 @@ class Bridge extends Base
         });
 
         if (defined('Sledgehammer\WEBPATH') === false) {
+            if (defined('WP_HOME')) {
             $url = new Url(WP_HOME);
-            $path = $url->path === '/' ? '/' : $url->path.'/';
+                $path = $url->path === '/' ? '/' : $url->path . '/';
+            } else {
+                $path = '/';
+            }
             define('Sledgehammer\WEBPATH', $path);
             define('Sledgehammer\WEBROOT', $path);
         }
         define('WEBPATH', \Sledgehammer\WEBPATH);
 
         if (WP_DEBUG) {
+            add_action('wp_enqueue_scripts', function () {
+                wp_enqueue_style('sh-debug', '/core/css/debug.css');
+            });
             add_action('admin_enqueue_scripts', function () {
                 wp_enqueue_style('sh-debug', 'https://rawgit.com/sledgehammer/core/master/public/css/debug.css');
             });
